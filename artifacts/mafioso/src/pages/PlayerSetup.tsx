@@ -3,7 +3,7 @@ import { useLocation, useParams } from "wouter";
 import { motion } from "framer-motion";
 import { getCase } from "@/data/cases";
 import { useGame, Player } from "@/context/GameContext";
-import { ArrowRight, User, MapPin } from "lucide-react";
+import { ArrowRight, User, MapPin, Clock } from "lucide-react";
 
 function shuffleArray<T>(array: T[]): T[] {
   const arr = [...array];
@@ -14,13 +14,16 @@ function shuffleArray<T>(array: T[]): T[] {
   return arr;
 }
 
+const DURATION_OPTIONS = [2, 3, 4, 5];
+
 export default function PlayerSetup() {
   const { caseId } = useParams<{ caseId: string }>();
   const [, setLocation] = useLocation();
-  const { setPlayers } = useGame();
+  const { setPlayers, setRoundDuration, gameState } = useGame();
   const caseData = getCase(caseId!);
   const [playerNames, setPlayerNames] = useState(["", "", "", ""]);
   const [errors, setErrors] = useState(["", "", "", ""]);
+  const [selectedDuration, setSelectedDuration] = useState(gameState.roundDuration || 3);
 
   if (!caseData) {
     return (
@@ -46,7 +49,6 @@ export default function PlayerSetup() {
     setErrors(newErrors);
     if (newErrors.some(e => e)) return;
 
-    // Check for duplicate names
     const names = playerNames.map(n => n.trim().toLowerCase());
     const hasDuplicates = names.some((n, i) => names.indexOf(n) !== i);
     if (hasDuplicates) {
@@ -59,10 +61,7 @@ export default function PlayerSetup() {
       return;
     }
 
-    // Randomly assign mafioso - pick one random index
     const mafiosoIndex = Math.floor(Math.random() * 4);
-
-    // Shuffle characters for assignment
     const shuffledChars = shuffleArray(caseData.characters);
 
     const players: Player[] = playerNames.map((name, index) => ({
@@ -76,12 +75,12 @@ export default function PlayerSetup() {
     }));
 
     setPlayers(players);
+    setRoundDuration(selectedDuration);
     setLocation(`/draw/${caseId}`);
   };
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">
-      {/* Header */}
       <div className="sticky top-0 z-20 bg-background/90 backdrop-blur-md border-b border-border/50">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
           <button
@@ -132,6 +131,41 @@ export default function PlayerSetup() {
           </div>
         </motion.div>
 
+        {/* Round duration selector */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="space-y-3"
+        >
+          <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4 text-amber-400" />
+            <h2 className="text-sm font-bold text-zinc-300" style={{ fontFamily: "'Cairo', sans-serif" }}>
+              مدة كل جولة
+            </h2>
+          </div>
+          <div className="grid grid-cols-4 gap-2">
+            {DURATION_OPTIONS.map(min => (
+              <button
+                key={min}
+                onClick={() => setSelectedDuration(min)}
+                className={`py-3 rounded-xl font-black text-lg transition-all border ${
+                  selectedDuration === min
+                    ? "bg-red-700 border-red-600/50 text-white glow-red"
+                    : "bg-card border-border text-zinc-400 hover:border-zinc-600"
+                }`}
+                style={{ fontFamily: "'Cairo', sans-serif" }}
+              >
+                {min}
+                <span className="text-xs font-medium block -mt-0.5">دقيقة</span>
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-zinc-600 text-center">
+            المدة المختارة: {selectedDuration} دقائق لكل جولة من الجولات الـ٣
+          </p>
+        </motion.div>
+
         {/* Player names */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -139,7 +173,7 @@ export default function PlayerSetup() {
           transition={{ delay: 0.1 }}
           className="space-y-4"
         >
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center gap-3 mb-4">
             <div className="flex-1 h-px bg-border" />
             <h2 className="text-sm font-bold text-zinc-400 px-3" style={{ fontFamily: "'Cairo', sans-serif" }}>
               أسماء اللاعبين الأربعة
@@ -152,13 +186,13 @@ export default function PlayerSetup() {
               key={index}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.15 + index * 0.07 }}
+              transition={{ delay: 0.15 + index * 0.06 }}
               className="space-y-1"
             >
               <div className={`flex items-center gap-3 p-4 rounded-2xl border bg-card transition-all ${
                 errors[index]
                   ? "border-red-600/50 bg-red-950/10"
-                  : "border-border focus-within:border-red-700/60 focus-within:bg-white/2"
+                  : "border-border focus-within:border-red-700/60"
               }`}>
                 <div className="w-9 h-9 rounded-xl bg-red-950/60 border border-red-900/40 flex items-center justify-center shrink-0">
                   <User className="w-4 h-4 text-red-400" />
@@ -192,11 +226,11 @@ export default function PlayerSetup() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
+          transition={{ delay: 0.45 }}
           className="p-4 rounded-2xl bg-amber-950/20 border border-amber-900/30"
         >
           <p className="text-sm text-amber-400/80 leading-relaxed text-center" style={{ fontFamily: "'Cairo', sans-serif" }}>
-            سيختار النظام المافيوسو بشكل عشوائي. كل لاعب سيرى بطاقته سراً.
+            سيختار النظام المافيوسو بشكل عشوائي. اللعبة تستمر ٣ جولات. كل جولة دليل وتصويت.
           </p>
         </motion.div>
 
@@ -204,7 +238,7 @@ export default function PlayerSetup() {
         <motion.button
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
+          transition={{ delay: 0.55 }}
           onClick={handleStart}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}

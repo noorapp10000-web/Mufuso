@@ -8,35 +8,24 @@ export interface Player {
   characterName: string;
   hasRevealed: boolean;
   isEliminated: boolean;
+  eliminatedInRound?: number;
 }
 
 export interface GameState {
   players: Player[];
-  currentRound: number;
-  revealedClues: number[];
-  eliminatedPlayers: string[];
-  phase: "setup" | "draw" | "play" | "vote" | "reveal";
-  winner: "innocents" | "mafioso" | null;
+  roundDuration: number; // in minutes
 }
 
 interface GameContextType {
   gameState: GameState;
   setPlayers: (players: Player[]) => void;
-  advanceRound: () => void;
-  revealClue: (clueIndex: number) => void;
-  eliminatePlayer: (playerId: string) => void;
-  setPhase: (phase: GameState["phase"]) => void;
+  setRoundDuration: (minutes: number) => void;
   resetGame: () => void;
-  setWinner: (winner: GameState["winner"]) => void;
 }
 
 const defaultGameState: GameState = {
   players: [],
-  currentRound: 1,
-  revealedClues: [],
-  eliminatedPlayers: [],
-  phase: "setup",
-  winner: null,
+  roundDuration: 3,
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -48,33 +37,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setGameState(prev => ({ ...prev, players }));
   };
 
-  const advanceRound = () => {
-    setGameState(prev => ({ ...prev, currentRound: prev.currentRound + 1 }));
-  };
-
-  const revealClue = (clueIndex: number) => {
-    setGameState(prev => ({
-      ...prev,
-      revealedClues: [...prev.revealedClues, clueIndex]
-    }));
-  };
-
-  const eliminatePlayer = (playerId: string) => {
-    setGameState(prev => ({
-      ...prev,
-      eliminatedPlayers: [...prev.eliminatedPlayers, playerId],
-      players: prev.players.map(p =>
-        p.id === playerId ? { ...p, isEliminated: true } : p
-      )
-    }));
-  };
-
-  const setPhase = (phase: GameState["phase"]) => {
-    setGameState(prev => ({ ...prev, phase }));
-  };
-
-  const setWinner = (winner: GameState["winner"]) => {
-    setGameState(prev => ({ ...prev, winner }));
+  const setRoundDuration = (minutes: number) => {
+    setGameState(prev => ({ ...prev, roundDuration: minutes }));
   };
 
   const resetGame = () => {
@@ -82,16 +46,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <GameContext.Provider value={{
-      gameState,
-      setPlayers,
-      advanceRound,
-      revealClue,
-      eliminatePlayer,
-      setPhase,
-      resetGame,
-      setWinner
-    }}>
+    <GameContext.Provider value={{ gameState, setPlayers, setRoundDuration, resetGame }}>
       {children}
     </GameContext.Provider>
   );
