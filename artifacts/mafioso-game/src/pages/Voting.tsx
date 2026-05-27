@@ -36,7 +36,7 @@ export default function Voting() {
 
   if (phase === "result") {
     return (
-      <div className="flex flex-col min-h-screen bg-gradient-to-b from-[#120204] to-[#1E0509] px-5 pt-12 pb-10">
+      <div className="flex flex-col min-h-screen bg-gradient-to-b from-[#130212] to-[#20051C] px-5 pt-12 pb-10">
         <h2 className="text-2xl font-bold text-gold font-amiri text-center mb-2">نتيجة التصويت</h2>
         <p className="text-gold/50 text-xs font-cairo text-center mb-6">من حصل على أكثر الأصوات؟</p>
 
@@ -47,13 +47,13 @@ export default function Voting() {
             .map((p) => {
               const w = Math.max((p.v / players.length) * 100, 5);
               return (
-                <div key={p.name} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${p.name === accused ? "bg-[#4A0E17] border-gold/60" : "bg-[#1A0508] border-gold/10"}`}>
+                <div key={p.name} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${p.name === accused ? "bg-[#5B0E2E] border-gold/60" : "bg-[#1C0418] border-gold/10"}`}>
                   <div className="flex-1">
                     <div className="flex justify-between mb-1">
                       <span className="text-gold/40 text-xs font-cairo">{p.v} صوت</span>
                       <span className="text-gold font-bold font-cairo">{p.name}</span>
                     </div>
-                    <div className="h-1.5 bg-[#2D0A10] rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-[#350A22] rounded-full overflow-hidden">
                       <div className="h-full bg-gold rounded-full transition-all duration-500" style={{ width: `${w}%` }} />
                     </div>
                   </div>
@@ -63,7 +63,7 @@ export default function Voting() {
         </div>
 
         {accused && (
-          <div className="mb-6 p-4 rounded-xl bg-[#2D0A10] border border-gold/25 text-center">
+          <div className="mb-6 p-4 rounded-xl bg-[#350A22] border border-gold/25 text-center">
             <p className="text-gold/50 text-sm font-cairo mb-1">المتهم</p>
             <p className="text-gold text-2xl font-bold font-amiri">{accused}</p>
           </div>
@@ -72,7 +72,7 @@ export default function Voting() {
         <div className="mt-auto">
           <button
             onClick={() => proceedToGuess(accusedIndex >= 0 ? accusedIndex : 0)}
-            className="w-full py-4 rounded-xl bg-gold text-[#120204] font-bold text-lg font-cairo transition-all active:scale-[0.97] hover:bg-gold/90 shadow-lg shadow-gold/20"
+            className="w-full py-4 rounded-xl bg-gold text-[#130212] font-bold text-lg font-cairo transition-all active:scale-[0.97] hover:bg-gold/90 shadow-lg shadow-gold/20"
           >
             الكشف عن الحقيقة
           </button>
@@ -84,14 +84,14 @@ export default function Voting() {
   const voter = players[currentVoter];
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-b from-[#120204] to-[#1E0509] px-5 pt-12 pb-10">
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-[#130212] to-[#20051C] px-5 pt-12 pb-10">
       <h2 className="text-2xl font-bold text-gold font-amiri text-center mb-1">التصويت</h2>
       <p className="text-gold/50 text-xs font-cairo text-center mb-5">
         اللاعب {currentVoter + 1} من {players.length}
       </p>
 
       {totalRounds > 0 && (
-        <div className="mb-5 p-3 rounded-xl bg-[#1A0508] border border-gold/10">
+        <div className="mb-5 p-3 rounded-xl bg-[#1C0418] border border-gold/10">
           <p className="text-gold/35 text-[10px] font-cairo text-center mb-2">ملخص الإشارات</p>
           <div className="flex flex-col gap-1">
             {Array.from({ length: totalRounds }).map((_, rIdx) => {
@@ -128,8 +128,8 @@ export default function Voting() {
               onClick={() => setSelectedVote(i)}
               className={`py-4 px-5 rounded-xl border font-bold font-cairo text-right transition-all active:scale-[0.98] ${
                 selectedVote === i
-                  ? "bg-[#4A0E17] border-gold text-gold shadow-lg shadow-gold/10"
-                  : "bg-[#2D0A10] border-gold/20 text-gold/70 hover:border-gold/50"
+                  ? "bg-[#5B0E2E] border-gold text-gold shadow-lg shadow-gold/10"
+                  : "bg-[#350A22] border-gold/20 text-gold/70 hover:border-gold/50"
               }`}
             >
               {p.name}
@@ -144,8 +144,8 @@ export default function Voting() {
           disabled={selectedVote === null}
           className={`w-full py-4 rounded-xl font-bold text-lg font-cairo transition-all active:scale-[0.97]
             ${selectedVote !== null
-              ? "bg-gold text-[#120204] hover:bg-gold/90 shadow-lg shadow-gold/20"
-              : "bg-[#2D0A10] text-gold/30 border border-gold/10 cursor-not-allowed"
+              ? "bg-gold text-[#130212] hover:bg-gold/90 shadow-lg shadow-gold/20"
+              : "bg-[#350A22] text-gold/30 border border-gold/10 cursor-not-allowed"
             }`}
         >
           {currentVoter + 1 >= players.length ? "عرض النتائج" : "صوّت وناول الهاتف"}

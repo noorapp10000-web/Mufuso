@@ -5,7 +5,7 @@ export default function Home() {
   const { selectMode } = useGame();
 
   return (
-    <div className="flex flex-col min-h-screen items-center justify-between px-5 pt-14 pb-10 bg-gradient-to-b from-[#120204] via-[#1E0509] to-[#120204]">
+    <div className="flex flex-col min-h-screen items-center justify-between px-5 pt-14 pb-10 bg-gradient-to-b from-[#130212] via-[#20051C] to-[#130212]">
       <div className="flex flex-col items-center gap-3">
         <div className="w-20 h-20 rounded-full bg-gold/10 border-2 border-gold/60 flex items-center justify-center shadow-lg shadow-gold/20">
           <Shield className="w-10 h-10 text-gold" strokeWidth={1.5} />
@@ -18,7 +18,7 @@ export default function Home() {
       <div className="flex flex-col gap-4 w-full max-w-xs mt-8">
         <button
           onClick={() => selectMode("pass-and-play")}
-          className="w-full py-5 px-5 rounded-xl bg-[#4A0E17] border border-gold/30 hover:border-gold/70 hover:bg-[#5A1522] transition-all duration-200 active:scale-[0.97] shadow-lg shadow-black/40"
+          className="w-full py-5 px-5 rounded-xl bg-[#5B0E2E] border border-gold/30 hover:border-gold/70 hover:bg-[#701338] transition-all duration-200 active:scale-[0.97] shadow-lg shadow-black/40"
         >
           <div className="flex items-center justify-between">
             <div className="flex flex-col items-end gap-1">
@@ -33,7 +33,7 @@ export default function Home() {
 
         <button
           onClick={() => selectMode("solo-detective")}
-          className="w-full py-5 px-5 rounded-xl bg-[#2D0A10] border border-gold/20 hover:border-gold/50 hover:bg-[#3A0C14] transition-all duration-200 active:scale-[0.97] shadow-lg shadow-black/40"
+          className="w-full py-5 px-5 rounded-xl bg-[#350A22] border border-gold/20 hover:border-gold/50 hover:bg-[#450B25] transition-all duration-200 active:scale-[0.97] shadow-lg shadow-black/40"
         >
           <div className="flex items-center justify-between">
             <div className="flex flex-col items-end gap-1">
@@ -57,7 +57,7 @@ export default function Home() {
           ].map((step) => (
             <div
               key={step.num}
-              className="flex flex-col items-center gap-2 p-3 rounded-lg bg-[#1E0509] border border-gold/10"
+              className="flex flex-col items-center gap-2 p-3 rounded-lg bg-[#20051C] border border-gold/10"
             >
               <span className="text-gold font-bold text-lg font-amiri">{step.num}</span>
               <p className="text-gold/45 text-[10px] font-cairo text-center leading-relaxed">{step.text}</p>

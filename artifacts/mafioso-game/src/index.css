@@ -63,50 +63,50 @@
   --elevate-1: rgba(212,175,55, .05);
   --elevate-2: rgba(212,175,55, .12);
 
-  /* Deep Burgundy Background: #120204 ≈ hsl(348 96% 2%) */
-  --background: 348 90% 3%;
-  /* Off-white text #F5E6E8 ≈ hsl(350 50% 94%) */
-  --foreground: 350 50% 94%;
+  /* Qatar Maroon Background: #130212 ≈ hsl(341 90% 4%) */
+  --background: 341 90% 4%;
+  /* Off-white text */
+  --foreground: 341 40% 94%;
   /* Border: subtle gold */
   --border: 43 60% 35%;
-  /* Card: Rich Burgundy #4A0E17 ≈ hsl(350 70% 18%) */
-  --card: 350 72% 17%;
-  --card-foreground: 350 50% 94%;
+  /* Card: Qatar Maroon #5B0E2E ≈ hsl(341 74% 20%) */
+  --card: 341 74% 18%;
+  --card-foreground: 341 40% 94%;
   --card-border: 43 65% 40%;
   /* Sidebar same as card */
-  --sidebar: 350 72% 17%;
-  --sidebar-foreground: 350 50% 94%;
+  --sidebar: 341 74% 18%;
+  --sidebar-foreground: 341 40% 94%;
   --sidebar-border: 43 65% 40%;
   --sidebar-primary: 43 70% 52%;
-  --sidebar-primary-foreground: 348 90% 5%;
-  --sidebar-accent: 350 60% 25%;
-  --sidebar-accent-foreground: 350 50% 94%;
+  --sidebar-primary-foreground: 341 90% 5%;
+  --sidebar-accent: 341 65% 26%;
+  --sidebar-accent-foreground: 341 40% 94%;
   --sidebar-ring: 43 70% 52%;
   /* Popover */
-  --popover: 350 72% 14%;
-  --popover-foreground: 350 50% 94%;
+  --popover: 341 74% 14%;
+  --popover-foreground: 341 40% 94%;
   --popover-border: 43 65% 40%;
   /* Primary: Gold #D4AF37 ≈ hsl(43 65% 52%) */
   --primary: 43 70% 52%;
-  --primary-foreground: 348 90% 5%;
-  /* Secondary: Muted burgundy */
-  --secondary: 350 55% 22%;
-  --secondary-foreground: 350 50% 92%;
+  --primary-foreground: 341 90% 5%;
+  /* Secondary: Muted maroon */
+  --secondary: 341 60% 22%;
+  --secondary-foreground: 341 40% 92%;
   /* Muted */
-  --muted: 350 45% 14%;
-  --muted-foreground: 350 30% 65%;
+  --muted: 341 50% 14%;
+  --muted-foreground: 341 25% 65%;
   /* Accent: bright gold */
   --accent: 48 85% 58%;
-  --accent-foreground: 348 90% 5%;
+  --accent-foreground: 341 90% 5%;
   /* Destructive */
   --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 98%;
   --input: 43 50% 35%;
   --ring: 43 70% 52%;
   --chart-1: 43 70% 52%;
-  --chart-2: 350 72% 40%;
+  --chart-2: 341 74% 40%;
   --chart-3: 48 85% 58%;
-  --chart-4: 350 55% 30%;
+  --chart-4: 341 60% 30%;
   --chart-5: 43 50% 35%;
 
   --app-font-sans: 'Cairo', 'Amiri', sans-serif;
@@ -148,31 +148,31 @@
   --elevate-1: rgba(212,175,55, .05);
   --elevate-2: rgba(212,175,55, .12);
 
-  --background: 348 90% 3%;
-  --foreground: 350 50% 94%;
+  --background: 341 90% 4%;
+  --foreground: 341 40% 94%;
   --border: 43 60% 35%;
-  --card: 350 72% 17%;
-  --card-foreground: 350 50% 94%;
+  --card: 341 74% 18%;
+  --card-foreground: 341 40% 94%;
   --card-border: 43 65% 40%;
-  --sidebar: 350 72% 17%;
-  --sidebar-foreground: 350 50% 94%;
+  --sidebar: 341 74% 18%;
+  --sidebar-foreground: 341 40% 94%;
   --sidebar-border: 43 65% 40%;
   --sidebar-primary: 43 70% 52%;
-  --sidebar-primary-foreground: 348 90% 5%;
-  --sidebar-accent: 350 60% 25%;
-  --sidebar-accent-foreground: 350 50% 94%;
+  --sidebar-primary-foreground: 341 90% 5%;
+  --sidebar-accent: 341 65% 26%;
+  --sidebar-accent-foreground: 341 40% 94%;
   --sidebar-ring: 43 70% 52%;
-  --popover: 350 72% 14%;
-  --popover-foreground: 350 50% 94%;
+  --popover: 341 74% 14%;
+  --popover-foreground: 341 40% 94%;
   --popover-border: 43 65% 40%;
   --primary: 43 70% 52%;
-  --primary-foreground: 348 90% 5%;
-  --secondary: 350 55% 22%;
-  --secondary-foreground: 350 50% 92%;
-  --muted: 350 45% 14%;
-  --muted-foreground: 350 30% 65%;
+  --primary-foreground: 341 90% 5%;
+  --secondary: 341 60% 22%;
+  --secondary-foreground: 341 40% 92%;
+  --muted: 341 50% 14%;
+  --muted-foreground: 341 25% 65%;
   --accent: 48 85% 58%;
-  --accent-foreground: 348 90% 5%;
+  --accent-foreground: 341 90% 5%;
   --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 98%;
   --input: 43 50% 35%;
@@ -255,7 +255,7 @@
 }
 
 .luxury-card {
-  background: linear-gradient(135deg, #4A0E17 0%, #3D0A12 50%, #4A0E17 100%);
+  background: linear-gradient(135deg, #5B0E2E 0%, #4A0A24 50%, #5B0E2E 100%);
   border: 1px solid rgba(212,175,55,0.5);
   box-shadow: 0 0 0 1px rgba(212,175,55,0.15), 
               inset 0 1px 0 rgba(212,175,55,0.1),
@@ -311,7 +311,7 @@
 }
 
 .bg-deep-burgundy {
-  background: linear-gradient(180deg, #120204 0%, #1A0508 100%);
+  background: linear-gradient(180deg, #130212 0%, #1C0418 100%);
 }
 
 .metallic-frame {
@@ -330,7 +330,7 @@
   width: 4px;
 }
 .scroll-custom::-webkit-scrollbar-track {
-  background: rgba(74,14,23,0.3);
+  background: rgba(91,14,46,0.3);
 }
 .scroll-custom::-webkit-scrollbar-thumb {
   background: rgba(212,175,55,0.5);
