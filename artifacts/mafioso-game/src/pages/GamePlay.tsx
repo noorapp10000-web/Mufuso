@@ -1,308 +1,238 @@
 import { useState, useEffect, useRef } from "react";
-import { Clock, ChevronLeft, FileText, X, Users } from "lucide-react";
+import { Clock, ChevronLeft } from "lucide-react";
 import { useGame } from "../App";
 
-function TimerDisplay({ onComplete }: { onComplete: () => void }) {
-  const [seconds, setSeconds] = useState(60);
-  const [running, setRunning] = useState(false);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+function DiscussionTimer({ seconds, onDone }: { seconds: number; onDone: () => void }) {
+  const [remaining, setRemaining] = useState(seconds);
+  const ref = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    if (running && seconds > 0) {
-      intervalRef.current = setInterval(() => {
-        setSeconds((s) => {
-          if (s <= 1) {
-            clearInterval(intervalRef.current!);
-            setRunning(false);
-            onComplete();
-            return 0;
-          }
-          return s - 1;
-        });
-      }, 1000);
-    }
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [running]);
+    ref.current = setInterval(() => {
+      setRemaining((r) => {
+        if (r <= 1) {
+          clearInterval(ref.current!);
+          onDone();
+          return 0;
+        }
+        return r - 1;
+      });
+    }, 1000);
+    return () => { if (ref.current) clearInterval(ref.current); };
+  }, [onDone]);
 
-  const handleToggle = () => {
-    if (seconds === 0) {
-      setSeconds(60);
-      setRunning(false);
-    } else {
-      setRunning((r) => !r);
-    }
-  };
-
-  const progress = (seconds / 60) * 100;
-  const isUrgent = seconds <= 15;
-
-  const radius = 42;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (progress / 100) * circumference;
+  const pct = remaining / seconds;
+  const strokeDash = 2 * Math.PI * 28;
 
   return (
-    <div className="flex flex-col items-center gap-3">
-      <div
-        className="relative w-28 h-28 cursor-pointer"
-        onClick={handleToggle}
-        data-testid="button-timer"
-      >
-        <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r={radius} fill="none" stroke="rgba(212,175,55,0.15)" strokeWidth="6" />
-          <circle
-            cx="50" cy="50" r={radius}
-            fill="none"
-            stroke={isUrgent ? "#EF4444" : "#D4AF37"}
-            strokeWidth="6"
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={strokeDashoffset}
-            style={{ transition: "stroke-dashoffset 1s linear, stroke 0.3s" }}
-          />
-        </svg>
-        <div
-          className="absolute inset-0 flex flex-col items-center justify-center"
-          style={{ animation: running && isUrgent ? "timerTick 1s ease-in-out infinite" : "none" }}
-        >
-          <span
-            className="text-2xl font-bold tabular-nums"
-            style={{ color: isUrgent ? "#EF4444" : "#D4AF37", fontFamily: "Cairo, sans-serif" }}
-          >
-            {String(Math.floor(seconds / 60)).padStart(2, "0")}:{String(seconds % 60).padStart(2, "0")}
-          </span>
-          <Clock size={12} className={isUrgent ? "text-red-400" : "text-[#D4AF37]"} style={{ opacity: 0.7 }} />
-        </div>
-      </div>
-      <p
-        className="text-xs"
-        style={{
-          color: running ? (isUrgent ? "#EF4444" : "#D4AF37") : "rgba(245,230,232,0.4)",
-          fontFamily: "Cairo, sans-serif",
-        }}
-      >
-        {seconds === 0 ? "انتهى الوقت" : running ? "جارٍ العد — اضغط للإيقاف" : "اضغط للبدء"}
-      </p>
+    <div className="flex flex-col items-center gap-2">
+      <svg viewBox="0 0 64 64" width="64" height="64">
+        <circle cx="32" cy="32" r="28" fill="none" stroke="#2D0A10" strokeWidth="4" />
+        <circle
+          cx="32" cy="32" r="28" fill="none"
+          stroke="#D4AF37" strokeWidth="4"
+          strokeDasharray={strokeDash}
+          strokeDashoffset={strokeDash * (1 - pct)}
+          strokeLinecap="round"
+          transform="rotate(-90 32 32)"
+          style={{ transition: "stroke-dashoffset 1s linear" }}
+        />
+        <text x="32" y="36" textAnchor="middle" fill="#D4AF37" fontSize="14" fontFamily="Cairo">
+          {remaining}
+        </text>
+      </svg>
+      <p className="text-gold/50 text-xs font-cairo">وقت النقاش</p>
     </div>
   );
 }
 
 export default function GamePlay() {
-  const { state, advanceRound } = useGame();
-  const [showClue, setShowClue] = useState(false);
+  const { state, submitClue, advanceRound, goHome } = useGame();
+  const { players, currentRound, currentCluePlayerIndex, clueSummaryMode, clues, selectedCase } = state;
+  const [clueInput, setClueInput] = useState("");
   const [timerDone, setTimerDone] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const totalRounds = 3;
 
-  const { selectedCase, players, currentRound } = state;
-  if (!selectedCase) return null;
+  const currentPlayer = players[currentCluePlayerIndex];
+  const roundClues = clues[currentRound - 1] || [];
 
-  const clue = selectedCase.clues[currentRound - 1];
-
-  const handleNextRound = () => {
-    setShowClue(false);
-    setTimerDone(false);
-    advanceRound();
+  const handleSubmit = () => {
+    const word = clueInput.trim().replace(/\s+/g, "");
+    if (!word) return;
+    if (word.includes(" ")) {
+      setShowConfirm(true);
+      return;
+    }
+    submitClue(word);
+    setClueInput("");
   };
 
-  return (
-    <div className="min-h-screen bg-deep-burgundy flex flex-col" dir="rtl">
-      {/* Header */}
-      <div
-        className="px-4 pt-10 pb-4"
-        style={{ borderBottom: "1px solid rgba(212,175,55,0.2)" }}
-      >
-        <div className="flex items-center justify-between mb-3">
-          <div>
-            <h2 className="gold-text text-lg font-bold" style={{ fontFamily: "Amiri, serif" }}>
-              {selectedCase.title}
-            </h2>
-            <p className="text-[#F5E6E8] text-opacity-50 text-xs" style={{ fontFamily: "Cairo, sans-serif" }}>
-              الجولة {currentRound} من ٣
-            </p>
-          </div>
-          <div className="flex gap-1.5">
-            {[1, 2, 3].map((r) => (
-              <div
-                key={r}
-                className="w-8 h-2 rounded-full transition-all"
-                style={{
-                  background:
-                    r < currentRound
-                      ? "#D4AF37"
-                      : r === currentRound
-                      ? "linear-gradient(90deg, #D4AF37, #FFDF00)"
-                      : "rgba(212,175,55,0.2)",
-                  boxShadow: r === currentRound ? "0 0 8px rgba(212,175,55,0.5)" : "none",
-                }}
-              />
-            ))}
-          </div>
+  const handleConfirmSubmit = () => {
+    submitClue(clueInput.trim());
+    setClueInput("");
+    setShowConfirm(false);
+  };
+
+  if (clueSummaryMode) {
+    return (
+      <div className="flex flex-col min-h-screen bg-gradient-to-b from-[#120204] to-[#1E0509] px-5 pt-12 pb-10">
+        <div className="flex items-center justify-between mb-6">
+          <button onClick={goHome} className="p-2 rounded-lg bg-[#2D0A10] border border-gold/20">
+            <ChevronLeft className="w-5 h-5 text-gold" strokeWidth={1.5} />
+          </button>
+          <h2 className="text-lg font-bold text-gold font-amiri">
+            إشارات الجولة {arabicNum(currentRound)}
+          </h2>
+          <div className="w-9" />
         </div>
 
-        {/* Case description snippet */}
-        <div
-          className="p-3 rounded-xl text-xs leading-relaxed"
-          style={{ background: "rgba(74,14,23,0.5)", border: "1px solid rgba(212,175,55,0.15)" }}
-        >
-          <p className="text-[#F5E6E8] text-opacity-60" style={{ fontFamily: "Cairo, sans-serif" }}>
-            {selectedCase.crimeDescription.substring(0, 120)}...
-          </p>
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto scroll-custom px-4 pb-4">
-        {/* Players grid */}
-        <div className="mt-4 mb-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Users size={14} className="text-[#D4AF37]" />
-            <p className="text-[#D4AF37] text-xs font-bold" style={{ fontFamily: "Cairo, sans-serif" }}>
-              المشتبه بهم
-            </p>
-          </div>
-          <div className="grid grid-cols-5 gap-2">
-            {players.map((player, i) => (
-              <div
-                key={i}
-                data-testid={`card-player-${i}`}
-                className="flex flex-col items-center gap-1.5"
-              >
-                <div
-                  className="w-12 h-12 rounded-full flex items-center justify-center text-base font-bold"
-                  style={{
-                    background: "linear-gradient(135deg, #4A0E17, #2D0A10)",
-                    border: "1.5px solid rgba(212,175,55,0.5)",
-                    color: "#D4AF37",
-                    fontFamily: "Cairo, sans-serif",
-                  }}
-                >
-                  {player.name.charAt(0)}
-                </div>
-                <p
-                  className="text-center text-xs font-bold leading-none"
-                  style={{ color: "#F5E6E8", fontFamily: "Cairo, sans-serif" }}
-                >
-                  {player.name}
-                </p>
-                <p
-                  className="text-center leading-none"
-                  style={{
-                    color: "rgba(212,175,55,0.7)",
-                    fontFamily: "Cairo, sans-serif",
-                    fontSize: "9px",
-                  }}
-                >
-                  {player.occupation}
-                </p>
-              </div>
-            ))}
-          </div>
+        <div className="flex gap-1 mb-6 justify-center">
+          {Array.from({ length: totalRounds }).map((_, i) => (
+            <div
+              key={i}
+              className={`h-1.5 rounded-full transition-all ${
+                i < currentRound ? "bg-gold w-8" : "bg-gold/20 w-5"
+              }`}
+            />
+          ))}
         </div>
 
-        {/* Timer section */}
-        <div
-          className="p-4 rounded-2xl mb-4"
-          style={{
-            background: "linear-gradient(135deg, #3D0A12, #2D0A10)",
-            border: "1px solid rgba(212,175,55,0.3)",
-          }}
-        >
-          <p className="text-center text-[#F5E6E8] text-opacity-60 text-xs mb-3" style={{ fontFamily: "Cairo, sans-serif" }}>
-            وقت النقاش
-          </p>
-          <TimerDisplay onComplete={() => setTimerDone(true)} />
-        </div>
-
-        {/* Clue button */}
-        <button
-          data-testid="button-reveal-clue"
-          onClick={() => setShowClue(true)}
-          className="btn-gold w-full py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 mb-4"
-          style={{ fontFamily: "Cairo, sans-serif" }}
-        >
-          <FileText size={20} />
-          كشف الدليل — الجولة {currentRound}
-        </button>
-
-        {/* Next round / voting button */}
-        <button
-          data-testid="button-next-round"
-          onClick={handleNextRound}
-          className="w-full py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 border-2 border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:bg-opacity-10 transition-all"
-          style={{ fontFamily: "Cairo, sans-serif" }}
-        >
-          <ChevronLeft size={20} />
-          {currentRound === 3 ? "الانتقال إلى التصويت" : `الجولة ${currentRound + 1}`}
-        </button>
-      </div>
-
-      {/* Clue Modal */}
-      {showClue && (
-        <div className="fixed inset-0 bg-black bg-opacity-85 flex items-end justify-center z-50 px-4 pb-6" dir="rtl">
-          <div
-            className="w-full max-w-sm rounded-2xl overflow-hidden"
-            style={{
-              background: "linear-gradient(180deg, #1A0508, #120204)",
-              border: "2px solid #D4AF37",
-              boxShadow: "0 0 60px rgba(212,175,55,0.4)",
-            }}
-          >
-            <div className="h-1 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent" />
-            <div className="px-5 pt-5 pb-4">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <p className="text-[#D4AF37] text-xs opacity-70 mb-0.5" style={{ fontFamily: "Cairo, sans-serif" }}>
-                    دليل الجولة
-                  </p>
-                  <p className="gold-text text-2xl font-bold" style={{ fontFamily: "Amiri, serif" }}>
-                    {currentRound === 1 ? "الأول" : currentRound === 2 ? "الثاني" : "الثالث"}
-                  </p>
-                </div>
-                <button
-                  onClick={() => setShowClue(false)}
-                  className="w-9 h-9 rounded-full border border-[#D4AF37] border-opacity-40 flex items-center justify-center text-[#D4AF37]"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              {/* Clue badge type */}
-              <div
-                className="inline-block px-3 py-1 rounded-full mb-4 text-xs"
-                style={{
-                  background: "rgba(212,175,55,0.15)",
-                  border: "1px solid rgba(212,175,55,0.3)",
-                  color: "#D4AF37",
-                  fontFamily: "Cairo, sans-serif",
-                }}
-              >
-                {currentRound === 1 ? "خيط غامض وغير مباشر" : currentRound === 2 ? "دليل مضلل" : "تحليل دقيق"}
-              </div>
-
-              {/* Clue text */}
-              <div
-                className="p-4 rounded-xl"
-                style={{ background: "rgba(74,14,23,0.6)", border: "1px solid rgba(212,175,55,0.2)" }}
-              >
-                <p
-                  className="text-[#F5E6E8] text-base leading-relaxed"
-                  style={{ fontFamily: "Cairo, sans-serif" }}
-                >
-                  {clue}
-                </p>
-              </div>
-
-              <button
-                data-testid="button-close-clue"
-                onClick={() => setShowClue(false)}
-                className="btn-gold w-full py-3 rounded-xl font-bold text-sm mt-4"
-                style={{ fontFamily: "Cairo, sans-serif" }}
-              >
-                فهمت — للنقاش
-              </button>
+        <div className="flex flex-col gap-2 mb-6">
+          {roundClues.map((entry, i) => (
+            <div key={i} className="flex items-center justify-between px-4 py-3 rounded-xl bg-[#2D0A10] border border-gold/15">
+              <span className="text-gold text-xl font-bold font-amiri">{entry.clue}</span>
+              <span className="text-gold/50 text-sm font-cairo">{players[entry.playerIndex]?.name}</span>
             </div>
+          ))}
+        </div>
+
+        <div className="flex flex-col items-center gap-4">
+          {!timerDone ? (
+            <DiscussionTimer seconds={60} onDone={() => setTimerDone(true)} />
+          ) : (
+            <p className="text-gold/50 text-sm font-cairo">انتهى وقت النقاش</p>
+          )}
+        </div>
+
+        <div className="mt-auto">
+          <button
+            onClick={() => {
+              setTimerDone(false);
+              advanceRound();
+            }}
+            className="w-full py-4 rounded-xl bg-gold text-[#120204] font-bold text-lg font-cairo transition-all active:scale-[0.97] hover:bg-gold/90 shadow-lg shadow-gold/20"
+          >
+            {currentRound >= totalRounds ? "التصويت" : `الجولة ${arabicNum(currentRound + 1)}`}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-[#120204] to-[#1E0509] px-5 pt-12 pb-10">
+      <div className="flex items-center justify-between mb-5">
+        <button onClick={goHome} className="p-2 rounded-lg bg-[#2D0A10] border border-gold/20">
+          <ChevronLeft className="w-5 h-5 text-gold" strokeWidth={1.5} />
+        </button>
+        <div className="flex flex-col items-center">
+          <h2 className="text-base font-bold text-gold font-amiri">
+            الجولة {arabicNum(currentRound)} من {arabicNum(totalRounds)}
+          </h2>
+          <p className="text-gold/40 text-xs font-cairo">
+            اللاعب {currentCluePlayerIndex + 1} من {players.length}
+          </p>
+        </div>
+        <div className="flex items-center gap-1 text-gold/40 text-xs font-cairo">
+          <Clock className="w-4 h-4" strokeWidth={1.5} />
+        </div>
+      </div>
+
+      <div className="flex gap-1 mb-5 justify-center">
+        {players.map((_, i) => (
+          <div
+            key={i}
+            className={`h-1.5 rounded-full transition-all ${
+              i < currentCluePlayerIndex ? "bg-gold w-6" : i === currentCluePlayerIndex ? "bg-gold/80 w-8" : "bg-gold/20 w-4"
+            }`}
+          />
+        ))}
+      </div>
+
+      {selectedCase && (
+        <div className="mb-4 p-3 rounded-xl bg-[#1A0508] border border-gold/10">
+          <p className="text-gold/35 text-[10px] font-cairo mb-1 text-center">القضية</p>
+          <p className="text-gold/55 text-xs font-cairo text-center leading-relaxed">
+            {selectedCase.crimeScene}
+          </p>
+        </div>
+      )}
+
+      {roundClues.length > 0 && (
+        <div className="mb-4">
+          <p className="text-gold/40 text-xs font-cairo mb-2">الإشارات حتى الآن</p>
+          <div className="flex flex-wrap gap-2">
+            {roundClues.map((entry, i) => (
+              <div key={i} className="px-3 py-1.5 rounded-lg bg-[#2D0A10] border border-gold/15 flex gap-2 items-center">
+                <span className="text-gold font-bold font-amiri text-base">{entry.clue}</span>
+                <span className="text-gold/35 text-[10px] font-cairo">{players[entry.playerIndex]?.name}</span>
+              </div>
+            ))}
           </div>
         </div>
       )}
+
+      <div className="flex flex-col items-center gap-3 flex-1 justify-center">
+        <p className="text-gold/50 text-sm font-cairo">
+          دور <span className="text-gold font-bold">{currentPlayer?.name}</span>
+        </p>
+        <p className="text-gold/35 text-xs font-cairo">قل كلمة واحدة فقط كإشارة على كلمتك السرية</p>
+
+        <div className="w-full max-w-xs mt-2">
+          <input
+            type="text"
+            value={clueInput}
+            onChange={(e) => setClueInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+            placeholder="اكتب كلمتك..."
+            maxLength={20}
+            className="w-full bg-[#2D0A10] border-2 border-gold/30 rounded-xl py-4 px-5 text-gold text-xl font-amiri placeholder-gold/25 focus:outline-none focus:border-gold/60 text-center"
+            dir="rtl"
+            autoFocus
+          />
+        </div>
+
+        {showConfirm && (
+          <div className="w-full max-w-xs p-4 rounded-xl bg-[#4A0E17] border border-gold/30 text-center">
+            <p className="text-gold/70 text-sm font-cairo mb-3">الإشارة يجب أن تكون كلمة واحدة فقط. هل تريد الإرسال كما هو؟</p>
+            <div className="flex gap-2">
+              <button onClick={() => setShowConfirm(false)} className="flex-1 py-2 rounded-lg bg-[#2D0A10] text-gold/60 font-cairo text-sm border border-gold/15">
+                تعديل
+              </button>
+              <button onClick={handleConfirmSubmit} className="flex-1 py-2 rounded-lg bg-gold text-[#120204] font-cairo text-sm font-bold">
+                إرسال
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <button
+        onClick={handleSubmit}
+        disabled={!clueInput.trim()}
+        className={`w-full py-4 rounded-xl font-bold text-lg font-cairo transition-all active:scale-[0.97] mt-6
+          ${clueInput.trim()
+            ? "bg-gold text-[#120204] hover:bg-gold/90 shadow-lg shadow-gold/20"
+            : "bg-[#2D0A10] text-gold/30 border border-gold/10 cursor-not-allowed"
+          }`}
+      >
+        أرسل الإشارة
+      </button>
     </div>
   );
+}
+
+function arabicNum(n: number): string {
+  const nums = ["١", "٢", "٣", "٤", "٥"];
+  return nums[n - 1] ?? String(n);
 }

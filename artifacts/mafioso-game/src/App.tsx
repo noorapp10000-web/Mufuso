@@ -1,12 +1,13 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState, createContext, useContext } from "react";
+import { createContext, useContext } from "react";
 import { useGameStore } from "./store/gameStore";
 import Home from "./pages/Home";
 import CaseSelection from "./pages/CaseSelection";
 import PlayerSetup from "./pages/PlayerSetup";
-import RoleReveal from "./pages/RoleReveal";
+import WordReveal from "./pages/WordReveal";
 import GamePlay from "./pages/GamePlay";
 import Voting from "./pages/Voting";
+import MafiusoGuess from "./pages/MafiusoGuess";
 import Resolution from "./pages/Resolution";
 
 const queryClient = new QueryClient();
@@ -30,9 +31,10 @@ function AppContent() {
         {state.phase === "home" && <Home />}
         {state.phase === "case-selection" && <CaseSelection />}
         {state.phase === "player-setup" && <PlayerSetup />}
-        {state.phase === "role-reveal" && <RoleReveal />}
+        {state.phase === "word-reveal" && <WordReveal />}
         {state.phase === "gameplay" && <GamePlay />}
         {state.phase === "voting" && <Voting />}
+        {state.phase === "mafioso-guess" && <MafiusoGuess />}
         {state.phase === "resolution" && <Resolution />}
       </div>
     </GameContext.Provider>

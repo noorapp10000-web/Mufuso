@@ -5,165 +5,92 @@ import { CASES, Case } from "../data/cases";
 
 export default function CaseSelection() {
   const { selectCase, goHome } = useGame();
-  const [search, setSearch] = useState("");
+  const [query, setQuery] = useState("");
 
-  const filtered = CASES.filter((c) =>
-    c.title.includes(search) || c.crimeDescription.includes(search)
+  const filtered = CASES.filter(
+    (c) =>
+      c.title.includes(query) ||
+      c.category.includes(query) ||
+      c.citizensWord.includes(query) ||
+      c.mafiusoWord.includes(query)
   );
 
   return (
-    <div className="min-h-screen bg-deep-burgundy flex flex-col" dir="rtl">
-      {/* Header */}
-      <div
-        className="sticky top-0 z-10 px-4 pt-10 pb-4"
-        style={{
-          background: "linear-gradient(180deg, #120204 80%, transparent 100%)",
-          borderBottom: "1px solid rgba(212,175,55,0.2)",
-        }}
-      >
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-[#120204] to-[#1E0509]">
+      <div className="sticky top-0 z-10 bg-[#120204]/95 backdrop-blur-sm px-5 pt-12 pb-4 border-b border-gold/10">
         <div className="flex items-center gap-3 mb-4">
-          <button
-            data-testid="button-back-home"
-            onClick={goHome}
-            className="w-9 h-9 rounded-full border border-[#D4AF37] border-opacity-40 flex items-center justify-center text-[#D4AF37] hover:bg-[#D4AF37] hover:bg-opacity-10 transition-all"
-          >
-            <ArrowRight size={18} />
+          <button onClick={goHome} className="p-2 rounded-lg bg-[#2D0A10] border border-gold/20 active:scale-95 transition-transform">
+            <ArrowRight className="w-5 h-5 text-gold" strokeWidth={1.5} />
           </button>
-          <div>
-            <h1 className="gold-text text-xl font-bold" style={{ fontFamily: "Amiri, serif" }}>
-              اختر القضية
-            </h1>
-            <p className="text-[#F5E6E8] text-opacity-50 text-xs" style={{ fontFamily: "Cairo, sans-serif" }}>
-              ٣٠ قضية غامضة — اكتشف الحقيقة
-            </p>
-          </div>
+          <h2 className="text-xl font-bold text-gold font-amiri">اختر القضية</h2>
         </div>
-
-        {/* Search */}
         <div className="relative">
-          <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#D4AF37] opacity-60" />
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gold/40" strokeWidth={1.5} />
           <input
-            type="search"
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
             placeholder="ابحث عن قضية..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pr-9 pl-4 py-2.5 rounded-xl text-sm outline-none"
-            style={{
-              background: "rgba(74,14,23,0.8)",
-              border: "1px solid rgba(212,175,55,0.3)",
-              color: "#F5E6E8",
-              fontFamily: "Cairo, sans-serif",
-            }}
-            data-testid="input-search-case"
+            className="w-full bg-[#2D0A10] border border-gold/20 rounded-lg py-2.5 pr-9 pl-3 text-gold text-sm font-cairo placeholder-gold/30 focus:outline-none focus:border-gold/50"
+            dir="rtl"
           />
         </div>
       </div>
 
-      {/* Cases Grid */}
-      <div className="flex-1 px-4 pb-8 overflow-y-auto scroll-custom">
-        <div className="grid grid-cols-2 gap-3 mt-4">
-          {filtered.map((c) => (
-            <CaseCard key={c.id} caseData={c} onSelect={() => selectCase(c)} />
-          ))}
-        </div>
+      <div className="flex flex-col gap-3 px-5 py-4 pb-10">
+        {filtered.map((c) => (
+          <CaseCard key={c.id} c={c} onSelect={() => c.isUnlocked && selectCase(c)} />
+        ))}
         {filtered.length === 0 && (
-          <div className="text-center py-16">
-            <p className="text-[#F5E6E8] text-opacity-40 text-sm" style={{ fontFamily: "Cairo, sans-serif" }}>
-              لا توجد نتائج
-            </p>
-          </div>
+          <p className="text-center text-gold/40 font-cairo mt-16 text-sm">لا توجد قضايا مطابقة</p>
         )}
       </div>
     </div>
   );
 }
 
-function CaseCard({ caseData, onSelect }: { caseData: Case; onSelect: () => void }) {
-  const isLocked = !caseData.isUnlocked;
-
+function CaseCard({ c, onSelect }: { c: Case; onSelect: () => void }) {
   return (
     <button
-      data-testid={`card-case-${caseData.id}`}
-      onClick={isLocked ? undefined : onSelect}
-      className={`relative rounded-xl overflow-hidden text-right transition-all duration-300 ${
-        isLocked ? "opacity-60 cursor-not-allowed" : "hover:scale-[1.02] active:scale-[0.98]"
-      }`}
-      style={{
-        background: "linear-gradient(135deg, #3D0A12 0%, #2D0A10 100%)",
-        border: isLocked ? "1px solid rgba(212,175,55,0.2)" : "1px solid rgba(212,175,55,0.5)",
-        boxShadow: isLocked
-          ? "none"
-          : "0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(212,175,55,0.1)",
-      }}
+      onClick={onSelect}
+      disabled={!c.isUnlocked}
+      className={`w-full text-right rounded-xl border transition-all duration-200 active:scale-[0.98] overflow-hidden
+        ${c.isUnlocked
+          ? "bg-[#2D0A10] border-gold/25 hover:border-gold/60 hover:bg-[#380C14]"
+          : "bg-[#1A0508]/60 border-gold/10 opacity-55"
+        }`}
     >
-      {/* SVG Scene */}
-      <div className="w-full aspect-square p-1 relative">
-        <caseData.SvgScene />
-        {isLocked && (
-          <div
-            className="absolute inset-0 flex items-center justify-center rounded-lg"
-            style={{ background: "rgba(18,2,4,0.7)" }}
-          >
-            <Lock size={24} className="text-[#D4AF37] opacity-60" />
-          </div>
-        )}
-      </div>
-
-      {/* Info */}
-      <div className="px-2.5 pb-2.5 pt-1">
-        {/* Case number */}
-        <div className="flex items-center justify-between mb-1">
-          <span
-            className="text-xs px-1.5 py-0.5 rounded"
-            style={{
-              background: "rgba(212,175,55,0.15)",
-              color: "#D4AF37",
-              fontFamily: "Cairo, sans-serif",
-              fontSize: "10px",
-            }}
-          >
-            #{caseData.id}
-          </span>
-          {isLocked && (
-            <span
-              className="text-xs"
-              style={{ color: "rgba(245,230,232,0.3)", fontFamily: "Cairo, sans-serif", fontSize: "9px" }}
-            >
-              مقفلة
+      <div className="flex items-stretch">
+        <div className="w-20 flex-shrink-0 bg-[#1A0508] flex items-center justify-center p-2">
+          <c.SvgScene />
+        </div>
+        <div className="flex flex-col justify-between flex-1 p-3">
+          <div className="flex items-start justify-between gap-2">
+            <span className={`text-xs font-cairo px-2 py-0.5 rounded-full border ${c.isUnlocked ? "text-gold/70 border-gold/20 bg-gold/5" : "text-gold/30 border-gold/10"}`}>
+              {c.category}
             </span>
+            {!c.isUnlocked && (
+              <Lock className="w-4 h-4 text-gold/30 flex-shrink-0 mt-0.5" strokeWidth={1.5} />
+            )}
+          </div>
+          <p className={`text-base font-bold font-cairo mt-1.5 ${c.isUnlocked ? "text-gold" : "text-gold/40"}`}>
+            {c.title}
+          </p>
+          {c.isUnlocked && (
+            <div className="flex gap-2 mt-2">
+              <span className="text-[10px] font-cairo text-gold/40 bg-[#1A0508] border border-gold/10 rounded px-2 py-0.5">
+                المواطنون: <span className="text-gold/60 font-bold">{c.citizensWord}</span>
+              </span>
+              <span className="text-[10px] font-cairo text-gold/40 bg-[#1A0508] border border-gold/10 rounded px-2 py-0.5">
+                المافيوسو: <span className="text-gold/60 font-bold">???</span>
+              </span>
+            </div>
+          )}
+          {!c.isUnlocked && (
+            <p className="text-gold/30 text-[10px] font-cairo mt-1">قضية مقفلة</p>
           )}
         </div>
-        <p
-          className="text-sm font-bold leading-tight"
-          style={{
-            color: isLocked ? "rgba(245,230,232,0.4)" : "#F5E6E8",
-            fontFamily: "Cairo, sans-serif",
-          }}
-        >
-          {caseData.title}
-        </p>
-        <p
-          className="text-xs mt-1 leading-relaxed line-clamp-2"
-          style={{
-            color: "rgba(245,230,232,0.45)",
-            fontFamily: "Cairo, sans-serif",
-            display: "-webkit-box",
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden",
-          }}
-        >
-          {caseData.crimeDescription.substring(0, 60)}...
-        </p>
       </div>
-
-      {/* Bottom gold line for unlocked */}
-      {!isLocked && (
-        <div
-          className="absolute bottom-0 left-0 right-0 h-0.5"
-          style={{ background: "linear-gradient(90deg, transparent, #D4AF37, transparent)" }}
-        />
-      )}
     </button>
   );
 }

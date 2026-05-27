@@ -1,132 +1,82 @@
 import { useState } from "react";
-import { ArrowRight, User, Check } from "lucide-react";
+import { ArrowRight, User, Plus, Minus } from "lucide-react";
 import { useGame } from "../App";
 
+const PLAYER_COUNT = 5;
+
 export default function PlayerSetup() {
-  const { state, setupPlayers, goHome } = useGame();
-  const [names, setNames] = useState(["", "", "", "", ""]);
+  const { goHome, setupPlayers } = useGame();
+  const [names, setNames] = useState<string[]>(Array(PLAYER_COUNT).fill(""));
 
-  const allFilled = names.every((n) => n.trim().length > 0);
-
-  const handleChange = (index: number, value: string) => {
+  const updateName = (i: number, val: string) => {
     setNames((prev) => {
-      const copy = [...prev];
-      copy[index] = value;
-      return copy;
+      const n = [...prev];
+      n[i] = val;
+      return n;
     });
   };
 
+  const canStart = names.every((n) => n.trim().length > 0);
+
   const handleStart = () => {
-    if (allFilled) {
-      setupPlayers(names.map((n) => n.trim()));
-    }
+    if (canStart) setupPlayers(names.map((n) => n.trim()));
   };
 
   return (
-    <div className="min-h-screen bg-deep-burgundy flex flex-col" dir="rtl">
-      {/* Header */}
-      <div
-        className="px-4 pt-10 pb-4"
-        style={{ borderBottom: "1px solid rgba(212,175,55,0.2)" }}
-      >
-        <div className="flex items-center gap-3">
-          <button
-            data-testid="button-back"
-            onClick={goHome}
-            className="w-9 h-9 rounded-full border border-[#D4AF37] border-opacity-40 flex items-center justify-center text-[#D4AF37]"
-          >
-            <ArrowRight size={18} />
-          </button>
-          <div>
-            <h1 className="gold-text text-xl font-bold" style={{ fontFamily: "Amiri, serif" }}>
-              أسماء اللاعبين
-            </h1>
-            <p className="text-[#F5E6E8] text-opacity-50 text-xs" style={{ fontFamily: "Cairo, sans-serif" }}>
-              {state.selectedCase?.title}
-            </p>
-          </div>
-        </div>
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-[#120204] to-[#1E0509] px-5 pt-12 pb-10">
+      <div className="flex items-center gap-3 mb-8">
+        <button
+          onClick={goHome}
+          className="p-2 rounded-lg bg-[#2D0A10] border border-gold/20 active:scale-95 transition-transform"
+        >
+          <ArrowRight className="w-5 h-5 text-gold" strokeWidth={1.5} />
+        </button>
+        <h2 className="text-xl font-bold text-gold font-amiri">أسماء اللاعبين</h2>
       </div>
 
-      {/* Case preview */}
-      {state.selectedCase && (
-        <div className="mx-4 mt-4 p-3 rounded-xl" style={{ background: "rgba(74,14,23,0.6)", border: "1px solid rgba(212,175,55,0.2)" }}>
-          <p className="text-[#D4AF37] text-xs font-bold mb-1" style={{ fontFamily: "Cairo, sans-serif" }}>
-            القضية المختارة
-          </p>
-          <p className="text-[#F5E6E8] text-sm leading-relaxed" style={{ fontFamily: "Cairo, sans-serif" }}>
-            {state.selectedCase.crimeDescription.substring(0, 100)}...
-          </p>
-        </div>
-      )}
-
-      {/* Player name inputs */}
-      <div className="flex-1 px-4 pt-6 space-y-4">
-        <p className="text-[#F5E6E8] text-opacity-60 text-sm text-center mb-2" style={{ fontFamily: "Cairo, sans-serif" }}>
-          أدخل أسماء الخمسة لاعبين
-        </p>
-        {names.map((name, index) => (
-          <div key={index} className="relative">
-            <div
-              className="flex items-center gap-3 rounded-xl px-4 py-3 transition-all"
-              style={{
-                background: "rgba(74,14,23,0.7)",
-                border: name.trim() ? "1px solid rgba(212,175,55,0.6)" : "1px solid rgba(212,175,55,0.2)",
-              }}
-            >
-              <div
-                className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-                style={{ background: "rgba(212,175,55,0.15)", border: "1px solid rgba(212,175,55,0.3)" }}
-              >
-                {name.trim() ? (
-                  <Check size={14} className="text-[#D4AF37]" />
-                ) : (
-                  <User size={14} className="text-[#D4AF37] opacity-60" />
-                )}
-              </div>
-              <div className="flex-1">
-                <label className="text-[#D4AF37] text-xs opacity-70 block mb-0.5" style={{ fontFamily: "Cairo, sans-serif" }}>
-                  اللاعب {index + 1}
-                </label>
-                <input
-                  data-testid={`input-player-${index + 1}`}
-                  type="text"
-                  value={name}
-                  onChange={(e) => handleChange(index, e.target.value)}
-                  placeholder={`اسم اللاعب ${index + 1}`}
-                  className="w-full bg-transparent outline-none text-sm"
-                  style={{ color: "#F5E6E8", fontFamily: "Cairo, sans-serif" }}
-                />
-              </div>
+      <div className="flex flex-col gap-3 mb-2">
+        {names.map((name, i) => (
+          <div key={i} className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-[#4A0E17] border border-gold/30 flex items-center justify-center flex-shrink-0">
+              <User className="w-4 h-4 text-gold/70" strokeWidth={1.5} />
             </div>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => updateName(i, e.target.value)}
+              placeholder={`اللاعب ${arabicNum(i + 1)}`}
+              maxLength={16}
+              className="flex-1 bg-[#2D0A10] border border-gold/20 rounded-lg py-3 px-4 text-gold text-base font-cairo placeholder-gold/30 focus:outline-none focus:border-gold/50"
+              dir="rtl"
+            />
           </div>
         ))}
       </div>
 
-      {/* Start button */}
-      <div className="px-4 pb-8 pt-6">
-        <button
-          data-testid="button-start-game"
-          onClick={handleStart}
-          disabled={!allFilled}
-          className={`w-full py-4 rounded-xl font-bold text-lg transition-all ${
-            allFilled
-              ? "btn-gold shadow-[0_4px_20px_rgba(212,175,55,0.4)]"
-              : "opacity-40 cursor-not-allowed"
-          }`}
-          style={{
-            fontFamily: "Cairo, sans-serif",
-            background: allFilled ? undefined : "rgba(74,14,23,0.5)",
-            border: allFilled ? undefined : "1px solid rgba(212,175,55,0.2)",
-            color: allFilled ? undefined : "#F5E6E8",
-          }}
-        >
-          ابدأ الكشف عن الأدوار
-        </button>
-        <p className="text-center text-[#F5E6E8] text-opacity-40 text-xs mt-3" style={{ fontFamily: "Cairo, sans-serif" }}>
-          كل لاعب سيرى دوره سراً على الشاشة
+      <div className="mt-4 p-4 rounded-xl bg-[#1A0508] border border-gold/10">
+        <p className="text-gold/50 text-xs font-cairo leading-relaxed text-center">
+          سيُعيَّن المافيوسو عشوائياً — لن يعرفه أحد من البداية
         </p>
+      </div>
+
+      <div className="mt-auto pt-8">
+        <button
+          onClick={handleStart}
+          disabled={!canStart}
+          className={`w-full py-4 rounded-xl font-bold text-lg font-cairo transition-all duration-200 active:scale-[0.97]
+            ${canStart
+              ? "bg-gold text-[#120204] hover:bg-gold/90 shadow-lg shadow-gold/20"
+              : "bg-[#2D0A10] text-gold/30 border border-gold/10 cursor-not-allowed"
+            }`}
+        >
+          ابدأ التوزيع السري
+        </button>
       </div>
     </div>
   );
+}
+
+function arabicNum(n: number): string {
+  const nums = ["١", "٢", "٣", "٤", "٥"];
+  return nums[n - 1] ?? String(n);
 }

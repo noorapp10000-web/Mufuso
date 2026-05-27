@@ -6,16 +6,21 @@ export type GamePhase =
   | "home"
   | "case-selection"
   | "player-setup"
-  | "role-reveal"
+  | "word-reveal"
   | "gameplay"
   | "voting"
+  | "mafioso-guess"
   | "resolution";
 
 export interface Player {
   name: string;
-  occupation: string;
+  word: string;
   isMafioso: boolean;
-  roleRevealed: boolean;
+}
+
+export interface ClueEntry {
+  playerIndex: number;
+  clue: string;
 }
 
 export interface GameState {
@@ -23,71 +28,46 @@ export interface GameState {
   mode: GameMode | null;
   selectedCase: Case | null;
   players: Player[];
+  wordRevealIndex: number;
   currentRound: number;
-  revealingPlayerIndex: number;
+  currentCluePlayerIndex: number;
+  clueSummaryMode: boolean;
+  clues: ClueEntry[][];
   votes: Record<string, number>;
   accusedPlayerIndex: number | null;
-  timerRunning: boolean;
+  mafiusoGuess: string | null;
+  winner: "citizens" | "mafioso" | null;
 }
 
-const INITIAL_STATE: GameState = {
+const INITIAL: GameState = {
   phase: "home",
   mode: null,
   selectedCase: null,
   players: [],
+  wordRevealIndex: 0,
   currentRound: 1,
-  revealingPlayerIndex: 0,
+  currentCluePlayerIndex: 0,
+  clueSummaryMode: false,
+  clues: [[], [], []],
   votes: {},
   accusedPlayerIndex: null,
-  timerRunning: false,
+  mafiusoGuess: null,
+  winner: null,
 };
 
-export function createInitialGameState(): GameState {
-  return { ...INITIAL_STATE };
-}
-
-export function assignRoles(playerNames: string[], selectedCase: Case): Player[] {
-  const shuffledOccupations = [...selectedCase.occupations];
-  for (let i = shuffledOccupations.length - 1; i > 0; i--) {
+function shuffleArray<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [shuffledOccupations[i], shuffledOccupations[j]] = [shuffledOccupations[j], shuffledOccupations[i]];
+    [a[i], a[j]] = [a[j], a[i]];
   }
-
-  const mafieusoOccupation = shuffledOccupations[0];
-  const realCulpritOccupation = selectedCase.occupations[selectedCase.culpritIndex];
-
-  const players: Player[] = playerNames.map((name, index) => ({
-    name,
-    occupation: shuffledOccupations[index],
-    isMafioso: shuffledOccupations[index] === realCulpritOccupation,
-    roleRevealed: false,
-  }));
-
-  return players;
-}
-
-export function assignSoloRoles(selectedCase: Case): Player[] {
-  const aiNames = ["كريم", "سارة", "مصطفى", "نور"];
-  const shuffledOccupations = [...selectedCase.occupations];
-  for (let i = shuffledOccupations.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffledOccupations[i], shuffledOccupations[j]] = [shuffledOccupations[j], shuffledOccupations[i]];
-  }
-  const realCulpritOccupation = selectedCase.occupations[selectedCase.culpritIndex];
-  return aiNames.map((name, index) => ({
-    name,
-    occupation: shuffledOccupations[index],
-    isMafioso: shuffledOccupations[index] === realCulpritOccupation,
-    roleRevealed: true,
-  }));
+  return a;
 }
 
 export function useGameStore() {
-  const [state, setState] = useState<GameState>(createInitialGameState());
+  const [state, setState] = useState<GameState>({ ...INITIAL });
 
-  const setPhase = useCallback((phase: GamePhase) => {
-    setState((s) => ({ ...s, phase }));
-  }, []);
+  const goHome = useCallback(() => setState({ ...INITIAL }), []);
 
   const selectMode = useCallback((mode: GameMode) => {
     setState((s) => ({ ...s, mode, phase: "case-selection" }));
@@ -100,36 +80,39 @@ export function useGameStore() {
   const setupPlayers = useCallback((names: string[]) => {
     setState((s) => {
       if (!s.selectedCase) return s;
-      const players = assignRoles(names, s.selectedCase);
-      return {
-        ...s,
-        players,
-        revealingPlayerIndex: 0,
-        phase: "role-reveal",
-      };
+      const indices = shuffleArray([0, 1, 2, 3, 4]);
+      const mafiusoSlot = indices[0];
+      const players: Player[] = names.map((name, i) => ({
+        name,
+        word: i === mafiusoSlot ? s.selectedCase!.mafiusoWord : s.selectedCase!.citizensWord,
+        isMafioso: i === mafiusoSlot,
+      }));
+      return { ...s, players, wordRevealIndex: 0, phase: "word-reveal" };
     });
   }, []);
 
-  const setupSoloPlayers = useCallback(() => {
+  const revealNextWord = useCallback(() => {
     setState((s) => {
-      if (!s.selectedCase) return s;
-      const aiPlayers = assignSoloRoles(s.selectedCase);
-      return {
-        ...s,
-        players: aiPlayers,
-        phase: "gameplay",
-        currentRound: 1,
-      };
-    });
-  }, []);
-
-  const revealNextPlayer = useCallback(() => {
-    setState((s) => {
-      const nextIndex = s.revealingPlayerIndex + 1;
-      if (nextIndex >= s.players.length) {
-        return { ...s, phase: "gameplay", currentRound: 1, revealingPlayerIndex: 0 };
+      const next = s.wordRevealIndex + 1;
+      if (next >= s.players.length) {
+        return { ...s, phase: "gameplay", currentRound: 1, currentCluePlayerIndex: 0, clueSummaryMode: false };
       }
-      return { ...s, revealingPlayerIndex: nextIndex };
+      return { ...s, wordRevealIndex: next };
+    });
+  }, []);
+
+  const submitClue = useCallback((clue: string) => {
+    setState((s) => {
+      const newClues = s.clues.map((r) => [...r]) as ClueEntry[][];
+      newClues[s.currentRound - 1] = [
+        ...newClues[s.currentRound - 1],
+        { playerIndex: s.currentCluePlayerIndex, clue },
+      ];
+      const nextPlayer = s.currentCluePlayerIndex + 1;
+      if (nextPlayer >= s.players.length) {
+        return { ...s, clues: newClues, clueSummaryMode: true, currentCluePlayerIndex: nextPlayer };
+      }
+      return { ...s, clues: newClues, currentCluePlayerIndex: nextPlayer };
     });
   }, []);
 
@@ -138,50 +121,59 @@ export function useGameStore() {
       if (s.currentRound >= 3) {
         return { ...s, phase: "voting" };
       }
-      return { ...s, currentRound: s.currentRound + 1 };
+      return { ...s, currentRound: s.currentRound + 1, currentCluePlayerIndex: 0, clueSummaryMode: false };
     });
   }, []);
 
   const castVote = useCallback((playerName: string) => {
     setState((s) => {
-      const newVotes = { ...s.votes };
-      newVotes[playerName] = (newVotes[playerName] || 0) + 1;
-      return { ...s, votes: newVotes };
+      const v = { ...s.votes };
+      v[playerName] = (v[playerName] || 0) + 1;
+      return { ...s, votes: v };
     });
   }, []);
 
-  const setAccused = useCallback((index: number) => {
-    setState((s) => ({ ...s, accusedPlayerIndex: index }));
+  const proceedToGuess = useCallback((accusedIndex: number) => {
+    setState((s) => ({ ...s, accusedPlayerIndex: accusedIndex, phase: "mafioso-guess" }));
   }, []);
 
-  const confirmVerdict = useCallback(() => {
-    setState((s) => ({ ...s, phase: "resolution" }));
+  const submitMafiusoGuess = useCallback((guess: string) => {
+    setState((s) => {
+      if (!s.selectedCase || s.accusedPlayerIndex === null) return s;
+      const accused = s.players[s.accusedPlayerIndex];
+      if (!accused.isMafioso) {
+        return { ...s, mafiusoGuess: guess, winner: "mafioso", phase: "resolution" };
+      }
+      const correct = guess.trim() === s.selectedCase.citizensWord.trim();
+      return { ...s, mafiusoGuess: guess, winner: correct ? "mafioso" : "citizens", phase: "resolution" };
+    });
   }, []);
 
-  const resetGame = useCallback(() => {
-    setState(createInitialGameState());
+  const skipMafiusoGuess = useCallback(() => {
+    setState((s) => {
+      if (s.accusedPlayerIndex === null) return s;
+      const accused = s.players[s.accusedPlayerIndex];
+      return { ...s, winner: accused.isMafioso ? "citizens" : "mafioso", phase: "resolution" };
+    });
   }, []);
 
-  const goHome = useCallback(() => {
-    setState(createInitialGameState());
-  }, []);
-
+  const resetGame = useCallback(() => setState({ ...INITIAL }), []);
   const getCases = useCallback(() => CASES, []);
 
   return {
     state,
-    setPhase,
+    goHome,
     selectMode,
     selectCase,
     setupPlayers,
-    setupSoloPlayers,
-    revealNextPlayer,
+    revealNextWord,
+    submitClue,
     advanceRound,
     castVote,
-    setAccused,
-    confirmVerdict,
+    proceedToGuess,
+    submitMafiusoGuess,
+    skipMafiusoGuess,
     resetGame,
-    goHome,
     getCases,
   };
 }
