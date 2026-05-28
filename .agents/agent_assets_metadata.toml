@@ -174,3 +174,15 @@ id = "LeoXlMvnVLtYE9VKwOZ1s"
 uri = "file://artifacts/mafioso/public/case-images/case_28.png"
 type = "image"
 title = "generated_image"
+
+[[generated]]
+id = "Gz8P-mgsOHAnVbxh4BUqM"
+uri = "file://artifacts/mafioso/public/case-images/case_29.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "Fo1vsSr-xy-yIlxwnCaBx"
+uri = "file://artifacts/mafioso/public/case-images/case_30.png"
+type = "image"
+title = "generated_image"

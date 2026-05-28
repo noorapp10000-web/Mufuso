@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Switch, Route, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -11,6 +12,18 @@ import GamePlay from "@/pages/GamePlay";
 import { GameProvider } from "@/context/GameContext";
 
 const queryClient = new QueryClient();
+
+async function hideSplash() {
+  try {
+    const { Capacitor } = await import("@capacitor/core");
+    if (Capacitor.isNativePlatform()) {
+      const { SplashScreen } = await import("@capacitor/splash-screen");
+      await SplashScreen.hide({ fadeOutDuration: 500 });
+    }
+  } catch {
+    // Not running in Capacitor — ignore
+  }
+}
 
 function Router() {
   return (
@@ -26,6 +39,10 @@ function Router() {
 }
 
 function App() {
+  useEffect(() => {
+    hideSplash();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
