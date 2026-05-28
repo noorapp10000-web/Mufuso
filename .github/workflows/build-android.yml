@@ -92,12 +92,12 @@ jobs:
           fi
           echo "Icon size: $(identify -format '%wx%h' $ICON_SRC)"
 
-          # Generate icons for each density
+          # Generate icons for each density (force exact square dimensions)
           generate_icon() {
             local DIR=$1 SIZE=$2
             mkdir -p "${RES}/${DIR}"
-            convert "$ICON_SRC" -resize "${SIZE}x${SIZE}" "${RES}/${DIR}/ic_launcher.png"
-            convert "$ICON_SRC" -resize "${SIZE}x${SIZE}" "${RES}/${DIR}/ic_launcher_round.png"
+            convert "$ICON_SRC" -resize "${SIZE}x${SIZE}^" -gravity center -extent "${SIZE}x${SIZE}" "${RES}/${DIR}/ic_launcher.png"
+            convert "$ICON_SRC" -resize "${SIZE}x${SIZE}^" -gravity center -extent "${SIZE}x${SIZE}" "${RES}/${DIR}/ic_launcher_round.png"
             echo "  ✓ ${DIR}: ${SIZE}x${SIZE}"
           }
 
@@ -109,7 +109,7 @@ jobs:
 
           # Foreground icon for adaptive icons
           mkdir -p "${RES}/drawable" "${RES}/mipmap-anydpi-v26"
-          convert "$ICON_SRC" -resize 432x432 \
+          convert "$ICON_SRC" -resize 432x432^ -gravity center -extent 432x432 \
             -background '#0d0d0d' -gravity center -extent 512x512 \
             "${RES}/drawable/ic_launcher_foreground.png"
           echo "  ✓ drawable/ic_launcher_foreground.png"
