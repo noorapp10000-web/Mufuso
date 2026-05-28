@@ -75,6 +75,9 @@ jobs:
           test -d android/app || (echo "ERROR: android/app not found" && exit 1)
 
       # ─── 8. App icons via ImageMagick ─────────────────────────────────────────
+      - name: Install ImageMagick
+        run: sudo apt-get install -y imagemagick
+
       - name: Generate app icons
         working-directory: artifacts/mafioso
         run: |
