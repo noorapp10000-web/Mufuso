@@ -92,6 +92,12 @@ jobs:
           fi
           echo "Icon size: $(identify -format '%wx%h' $ICON_SRC)"
 
+          # Remove ALL default Capacitor/Android XML icon files that override our PNGs
+          find "${RES}" -name "ic_launcher*.xml" -delete
+          find "${RES}" -name "ic_launcher_foreground.xml" -delete
+          find "${RES}" -name "ic_launcher_background.xml" -delete
+          echo "  ✓ Removed default XML icon overrides"
+
           # Generate icons for each density (force exact square dimensions)
           generate_icon() {
             local DIR=$1 SIZE=$2
