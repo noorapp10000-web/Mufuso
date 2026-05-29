@@ -81,7 +81,7 @@ export default function Home() {
             className="text-zinc-400 text-sm max-w-xs mx-auto leading-relaxed"
             style={{ fontFamily: "'Cairo', sans-serif" }}
           >
-            لعبة استنتاج اجتماعي. ٤ لاعبين. ٣ أبرياء. مجرم واحد مختبئ في وسطكم.
+            لعبة استنتاج اجتماعي. ٤ أو ٥ لاعبين. أبرياء ومجرم واحد مختبئ في وسطكم.
           </motion.p>
         </div>
 
@@ -93,8 +93,8 @@ export default function Home() {
           className="grid grid-cols-3 gap-3 w-full max-w-xs"
         >
           {[
-            { value: "٣٠", label: "قضية" },
-            { value: "٤", label: "لاعبين" },
+            { value: "٦٠", label: "قضية" },
+            { value: "٤-٥", label: "لاعبين" },
             { value: "٣", label: "جولات" },
           ].map((stat, i) => (
             <div key={i} className="text-center p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06]">

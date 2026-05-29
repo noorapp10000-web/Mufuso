@@ -1,5 +1,4 @@
 uploads = []
-outputs = []
 
 [[generated]]
 id = "iCkzwpUZhME0FVo92q4dn"
@@ -366,3 +365,51 @@ id = "12ojrqvA2vB_bhYY8a1_X"
 uri = "file://artifacts/mafioso/public/case-images/case5p_30.png"
 type = "image"
 title = "space center countdown sabotage"
+
+[[generated]]
+id = "1kHrvTuujHaWhyE5O4VLN"
+uri = "file://artifacts/mafioso/public/bg_street_1.png"
+type = "image"
+title = "dark Cairo street graffiti option 1"
+
+[[generated]]
+id = "H6UQsYeXYBf0d4aMr4bIV"
+uri = "file://artifacts/mafioso/public/bg_street_2.png"
+type = "image"
+title = "dark Cairo street graffiti option 2"
+
+[[generated]]
+id = "Kh3ymP4Np9DnOsHAUw8st"
+uri = "file://artifacts/mafioso/public/bg_street_3.png"
+type = "image"
+title = "dark Cairo street graffiti option 3"
+
+[[generated]]
+id = "kCCo-j42g8wCYFDDdLsPH"
+uri = "file://artifacts/mafioso/public/bg_street_4.png"
+type = "image"
+title = "dark Cairo street graffiti option 4"
+
+[[outputs]]
+id = "VbYA6GJrIiE0kDruUmuuW"
+uri = "file://artifacts/mafioso/public/bg_street_1.png"
+type = "image"
+title = "خيار ١ — زقاق ضيق بإضاءة صفراء"
+
+[[outputs]]
+id = "HGGU54_1_eexfh0Gu667b"
+uri = "file://artifacts/mafioso/public/bg_street_2.png"
+type = "image"
+title = "خيار ٢ — جدران فن عربي بإضاءة زرقاء وعنبرية"
+
+[[outputs]]
+id = "XOR70QsP30Z1TQJh2CxxN"
+uri = "file://artifacts/mafioso/public/bg_street_3.png"
+type = "image"
+title = "خيار ٣ — شارع ممطر بملصقات عربية ممزقة"
+
+[[outputs]]
+id = "uzp4m2x8xLIWZgHkrsAj-"
+uri = "file://artifacts/mafioso/public/bg_street_4.png"
+type = "image"
+title = "خيار ٤ — شارع إسلامي قديم بضباب أحمر"
