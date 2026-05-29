@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useLocation, useParams } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { getCase, Character } from "@/data/cases";
+import { Character } from "@/data/cases";
+import { getCaseById as getCase } from "@/data/allCases";
 import { useGame, Player } from "@/context/GameContext";
 import {
   ArrowRight, Eye, ChevronDown, ChevronUp,

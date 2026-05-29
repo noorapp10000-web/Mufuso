@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
 import { motion } from "framer-motion";
-import { getCase } from "@/data/cases";
+import { getCaseById as getCase } from "@/data/allCases";
 import { useGame, Player } from "@/context/GameContext";
 import { ArrowRight, User, MapPin, Clock } from "lucide-react";
 
@@ -16,13 +16,16 @@ function shuffleArray<T>(array: T[]): T[] {
 
 const DURATION_OPTIONS = [2, 3, 4, 5];
 
+const PLAYER_LABELS = ["الأول", "الثاني", "الثالث", "الرابع", "الخامس"];
+
 export default function PlayerSetup() {
   const { caseId } = useParams<{ caseId: string }>();
   const [, setLocation] = useLocation();
   const { setPlayers, setRoundDuration, gameState } = useGame();
   const caseData = getCase(caseId!);
-  const [playerNames, setPlayerNames] = useState(["", "", "", ""]);
-  const [errors, setErrors] = useState(["", "", "", ""]);
+  const playerCount = caseData?.characters.length ?? 4;
+  const [playerNames, setPlayerNames] = useState(() => Array(playerCount).fill(""));
+  const [errors, setErrors] = useState(() => Array(playerCount).fill(""));
   const [selectedDuration, setSelectedDuration] = useState(gameState.roundDuration || 3);
 
   if (!caseData) {
@@ -175,12 +178,12 @@ export default function PlayerSetup() {
           <div className="flex items-center gap-3 mb-4">
             <div className="flex-1 h-px bg-border" />
             <h2 className="text-sm font-bold text-zinc-400 px-3" style={{ fontFamily: "'Cairo', sans-serif" }}>
-              أسماء اللاعبين الأربعة
+              أسماء اللاعبين {playerCount === 5 ? "الخمسة" : "الأربعة"}
             </h2>
             <div className="flex-1 h-px bg-border" />
           </div>
 
-          {[0, 1, 2, 3].map((index) => (
+          {Array.from({ length: playerCount }, (_, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, x: 20 }}
@@ -198,13 +201,13 @@ export default function PlayerSetup() {
                 </div>
                 <div className="flex-1">
                   <label className="text-xs text-zinc-500 mb-1 block">
-                    اللاعب {["الأول", "الثاني", "الثالث", "الرابع"][index]}
+                    اللاعب {PLAYER_LABELS[index]}
                   </label>
                   <input
                     type="text"
                     value={playerNames[index]}
                     onChange={(e) => handleNameChange(index, e.target.value)}
-                    placeholder={`اسم اللاعب ${["الأول", "الثاني", "الثالث", "الرابع"][index]}`}
+                    placeholder={`اسم اللاعب ${PLAYER_LABELS[index]}`}
                     className="w-full bg-transparent text-white placeholder-zinc-600 text-sm font-medium outline-none"
                     style={{ fontFamily: "'Cairo', sans-serif" }}
                     onKeyDown={(e) => e.key === "Enter" && handleStart()}

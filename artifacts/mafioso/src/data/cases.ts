@@ -22,6 +22,7 @@ export interface Case {
   summary: string;
   crime: string;
   coverImage: string;
+  playerCount?: number;
   characters: Character[];
   clues: Clue[];
   trueStory: string;

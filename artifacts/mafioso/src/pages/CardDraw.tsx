@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { getCase } from "@/data/cases";
+import { getCaseById as getCase } from "@/data/allCases";
 import { useGame } from "@/context/GameContext";
 import { ArrowRight, Eye, EyeOff, Shield, Skull } from "lucide-react";
 
@@ -131,7 +131,7 @@ export default function CardDraw() {
             </div>
 
             {/* Card */}
-            <div className="flip-card w-full mx-auto" style={{ minHeight: "520px" }}>
+            <div className="flip-card w-full mx-auto" style={{ height: "520px" }}>
               <div className={`flip-card-inner w-full h-full ${cardFlipped ? "flipped" : ""}`}>
                 {/* Card Back */}
                 <div
