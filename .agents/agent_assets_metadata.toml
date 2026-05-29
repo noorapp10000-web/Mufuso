@@ -1,5 +1,4 @@
 uploads = []
-outputs = []
 
 [[generated]]
 id = "iCkzwpUZhME0FVo92q4dn"
@@ -186,3 +185,51 @@ id = "Fo1vsSr-xy-yIlxwnCaBx"
 uri = "file://artifacts/mafioso/public/case-images/case_30.png"
 type = "image"
 title = "generated_image"
+
+[[outputs]]
+id = "EX0--HXb4BxIX53-ohZTR"
+uri = "file://screenshots/01_home.png"
+type = "image"
+title = "١. الشاشة الرئيسية"
+
+[[outputs]]
+id = "ImgmS2j3BQcxEEnTKrrxq"
+uri = "file://screenshots/02_case_selection_4p.png"
+type = "image"
+title = "٢. اختيار القضية - تبويب ٤ لاعبين"
+
+[[outputs]]
+id = "_UlvgCC069lx4v3ehpR9H"
+uri = "file://screenshots/02b_case_cards.png"
+type = "image"
+title = "٣. كروت القضايا (scroll لأسفل)"
+
+[[outputs]]
+id = "PC-bKaZTwsuTBndcsgCCQ"
+uri = "file://screenshots/03_case_selection_5p.png"
+type = "image"
+title = "٤. اختيار القضية - تبويب ٥ لاعبين"
+
+[[outputs]]
+id = "KVk3WFdjLl9-ohjCasmNZ"
+uri = "file://screenshots/04_player_setup.png"
+type = "image"
+title = "٥. إعداد أسماء اللاعبين"
+
+[[outputs]]
+id = "a1CikhFxKeNKZzlMXR8hU"
+uri = "file://screenshots/05_names_filled.png"
+type = "image"
+title = "٦. الأسماء مكتوبة"
+
+[[outputs]]
+id = "3urJTcAqlpFtG513diq39"
+uri = "file://screenshots/06_word_reveal.png"
+type = "image"
+title = "٧. شاشة الكشف عن الكلمة"
+
+[[outputs]]
+id = "X1DBhpLTRoohAP93BnP_H"
+uri = "file://screenshots/07_word_shown.png"
+type = "image"
+title = "٨. الكلمة ظاهرة للاعب"
