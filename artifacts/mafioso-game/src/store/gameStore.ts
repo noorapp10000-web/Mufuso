@@ -57,8 +57,10 @@ const INITIAL: GameState = {
 
 function shuffleArray<T>(arr: T[]): T[] {
   const a = [...arr];
+  const buf = new Uint32Array(a.length);
+  crypto.getRandomValues(buf);
   for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = buf[i] % (i + 1);
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
@@ -80,7 +82,7 @@ export function useGameStore() {
   const setupPlayers = useCallback((names: string[]) => {
     setState((s) => {
       if (!s.selectedCase) return s;
-      const indices = shuffleArray([0, 1, 2, 3, 4]);
+      const indices = shuffleArray(Array.from({ length: names.length }, (_, i) => i));
       const mafiusoSlot = indices[0];
       const players: Player[] = names.map((name, i) => ({
         name,

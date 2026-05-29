@@ -1,12 +1,11 @@
 import { useState } from "react";
-import { ArrowRight, User, Plus, Minus } from "lucide-react";
+import { ArrowRight, User } from "lucide-react";
 import { useGame } from "../App";
 
-const PLAYER_COUNT = 5;
-
 export default function PlayerSetup() {
-  const { goHome, setupPlayers } = useGame();
-  const [names, setNames] = useState<string[]>(Array(PLAYER_COUNT).fill(""));
+  const { goHome, setupPlayers, state } = useGame();
+  const playerCount = state.selectedCase?.players ?? 4;
+  const [names, setNames] = useState<string[]>(Array(playerCount).fill(""));
 
   const updateName = (i: number, val: string) => {
     setNames((prev) => {
@@ -22,44 +21,54 @@ export default function PlayerSetup() {
     if (canStart) setupPlayers(names.map((n) => n.trim()));
   };
 
+  const arabicOrdinals = ["الأول", "الثاني", "الثالث", "الرابع", "الخامس"];
+
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-[#130212] to-[#20051C] px-5 pt-12 pb-10">
-      <div className="flex items-center gap-3 mb-8">
+      <div className="flex items-center gap-3 mb-6">
         <button
           onClick={goHome}
           className="p-2 rounded-lg bg-[#350A22] border border-gold/20 active:scale-95 transition-transform"
         >
           <ArrowRight className="w-5 h-5 text-gold" strokeWidth={1.5} />
         </button>
-        <h2 className="text-xl font-bold text-gold font-amiri">أسماء اللاعبين</h2>
+        <div>
+          <h2 className="text-xl font-bold text-gold font-amiri">أسماء اللاعبين</h2>
+          <p className="text-gold/40 text-xs font-cairo">{playerCount} لاعبين لهذه القضية</p>
+        </div>
       </div>
 
-      <div className="flex flex-col gap-3 mb-2">
+      <div className="mb-4 px-4 py-3 rounded-xl bg-[#5B0E2E]/30 border border-gold/20 flex items-center gap-3">
+        <div className="w-8 h-8 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center flex-shrink-0">
+          <span className="text-gold text-xs font-bold font-cairo">{playerCount}</span>
+        </div>
+        <p className="text-gold/60 text-xs font-cairo leading-relaxed">
+          سيُعيَّن <span className="text-gold font-bold">المافيوسو</span> عشوائياً بشكل سري — لن يعرفه أحد من البداية
+        </p>
+      </div>
+
+      <div className="flex flex-col gap-3 mb-4">
         {names.map((name, i) => (
           <div key={i} className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-[#5B0E2E] border border-gold/30 flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-full bg-[#5B0E2E] border border-gold/30 flex items-center justify-center flex-shrink-0">
               <User className="w-4 h-4 text-gold/70" strokeWidth={1.5} />
             </div>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => updateName(i, e.target.value)}
-              placeholder={`اللاعب ${arabicNum(i + 1)}`}
-              maxLength={16}
-              className="flex-1 bg-[#350A22] border border-gold/20 rounded-lg py-3 px-4 text-gold text-base font-cairo placeholder-gold/30 focus:outline-none focus:border-gold/50"
-              dir="rtl"
-            />
+            <div className="flex-1">
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => updateName(i, e.target.value)}
+                placeholder={`اللاعب ${arabicOrdinals[i] ?? (i + 1)}`}
+                maxLength={16}
+                className="w-full bg-[#350A22] border border-gold/20 rounded-xl py-3.5 px-4 text-gold text-base font-cairo placeholder-gold/30 focus:outline-none focus:border-gold/50 transition-colors"
+                dir="rtl"
+              />
+            </div>
           </div>
         ))}
       </div>
 
-      <div className="mt-4 p-4 rounded-xl bg-[#1C0418] border border-gold/10">
-        <p className="text-gold/50 text-xs font-cairo leading-relaxed text-center">
-          سيُعيَّن المافيوسو عشوائياً — لن يعرفه أحد من البداية
-        </p>
-      </div>
-
-      <div className="mt-auto pt-8">
+      <div className="mt-auto pt-6">
         <button
           onClick={handleStart}
           disabled={!canStart}
@@ -74,9 +83,4 @@ export default function PlayerSetup() {
       </div>
     </div>
   );
-}
-
-function arabicNum(n: number): string {
-  const nums = ["١", "٢", "٣", "٤", "٥"];
-  return nums[n - 1] ?? String(n);
 }
