@@ -103,20 +103,20 @@ export default function GamePlay() {
   const roundDurationSeconds = gameState.roundDuration * 60;
   const mafiosoPlayer = gameState.players.find(p => p.isMafioso);
   const mafiosoChar = caseData.characters.find(c => c.id === mafiosoPlayer?.characterId);
+  const totalRounds = caseData.clues.length;
+  const ROUND_LABELS = ["الأولى", "الثانية", "الثالثة", "الرابعة", "الخامسة"];
+  const ROUND_NEXT_LABELS = ["الثانية", "الثالثة", "الرابعة", "الخامسة"];
 
   // Voters for current round
-  // Round 1 & 2: active players vote
-  // Round 3: the 2 eliminated innocents vote
+  // Rounds 1..totalRounds-1: active players vote
+  // Final round: eliminated innocents vote
   const currentVoters: Player[] =
-    currentRound === 3
-      ? eliminated.filter(e => !e.wasMafioso).map(e => e.player).slice(0, 2)
+    currentRound === totalRounds
+      ? eliminated.filter(e => !e.wasMafioso).map(e => e.player)
       : activePlayers;
 
   // Candidates to vote on
-  const voteTargets: Player[] =
-    currentRound === 3
-      ? activePlayers
-      : activePlayers;
+  const voteTargets: Player[] = activePlayers;
 
   // Count votes
   function tallyVotes(voteList: VoteRecord[]): Map<string, number> {
@@ -142,19 +142,25 @@ export default function GamePlay() {
     stopTimer();
 
     if (topPlayers.length > 1) {
-      // Tie
+      // Tie — let each tied player defend for 60s, then revote
       setTiedPlayers(topPlayers);
       setDefensePhase("first");
       setTimerDefensePlayer(0);
       setVotes([]);
-      startTimer(60, () => {
-        setTimerDefensePlayer(1);
-        setDefensePhase("second");
+
+      const runDefense = (idx: number) => {
+        setTimerDefensePlayer(idx);
+        setDefensePhase(idx === 0 ? "first" : "second");
         startTimer(60, () => {
-          setDefensePhase("revote");
-          setVotes([]);
+          if (idx + 1 < topPlayers.length) {
+            runDefense(idx + 1);
+          } else {
+            setDefensePhase("revote");
+            setVotes([]);
+          }
         });
-      });
+      };
+      runDefense(0);
       setPhase("tie_defense");
     } else {
       // One eliminated
@@ -178,7 +184,7 @@ export default function GamePlay() {
     if (player.isMafioso) {
       setGameWinner("innocents");
       setPhase("round_result");
-    } else if (currentRound === 3) {
+    } else if (currentRound === totalRounds) {
       setGameWinner("mafioso");
       setPhase("round_result");
     } else {
@@ -285,11 +291,11 @@ export default function GamePlay() {
           {/* Game rules */}
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
             className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800">
-            <div className="grid grid-cols-3 gap-3 text-center">
-              {["جولة ١", "جولة ٢", "جولة ٣"].map((r, i) => (
+            <div className={`grid gap-3 text-center`} style={{ gridTemplateColumns: `repeat(${totalRounds}, minmax(0, 1fr))` }}>
+              {Array.from({ length: totalRounds }, (_, i) => (
                 <div key={i} className="space-y-1">
-                  <div className="text-xs font-black text-red-400">{r}</div>
-                  <div className="text-xs text-zinc-500">دليل + تصويت</div>
+                  <div className="text-xs font-black text-red-400">جولة {i + 1}</div>
+                  <div className="text-xs text-zinc-500">{i === totalRounds - 1 ? "تصويت نهائي" : "دليل + تصويت"}</div>
                 </div>
               ))}
             </div>
@@ -310,7 +316,8 @@ export default function GamePlay() {
   // ─── PHASE: DISCUSS ──────────────────────────────────────────
   if (phase === "discuss") {
     const currentClue = caseData.clues[currentRound - 1];
-    const pastClues = currentRound === 3 ? caseData.clues : [currentClue];
+    const isLastRound = currentRound === totalRounds;
+    const pastClues = isLastRound ? caseData.clues : [currentClue];
     const timerPercent = roundDurationSeconds > 0 ? (timeLeft / roundDurationSeconds) * 100 : 0;
     const timerColor = timerPercent > 50 ? "bg-green-500" : timerPercent > 25 ? "bg-amber-500" : "bg-red-500";
 
@@ -335,7 +342,7 @@ export default function GamePlay() {
               />
             </div>
             <div className="text-xs font-bold text-zinc-400 whitespace-nowrap">
-              جولة {currentRound}/٣
+              جولة {currentRound}/{totalRounds}
             </div>
           </div>
         </div>
@@ -344,17 +351,17 @@ export default function GamePlay() {
           {/* Round header */}
           <div className="text-center space-y-1">
             <h2 className="text-2xl font-black text-white" style={{ fontFamily: "'Cairo', sans-serif" }}>
-              {currentRound === 3 ? "الجولة الأخيرة" : `الجولة ${["الأولى", "الثانية", "الثالثة"][currentRound - 1]}`}
+              {isLastRound ? "الجولة الأخيرة" : `الجولة ${ROUND_LABELS[currentRound - 1] ?? currentRound}`}
             </h2>
             <p className="text-zinc-500 text-sm">
-              {currentRound === 3 ? "كل الأدلة أمامكم. ناقشوا وصوّتوا." : "اقرؤوا الدليل، ناقشوا، ثم صوّتوا."}
+              {isLastRound ? "كل الأدلة أمامكم. ناقشوا وصوّتوا." : "اقرؤوا الدليل، ناقشوا، ثم صوّتوا."}
             </p>
           </div>
 
           {/* Clues */}
           <div className="space-y-4">
-            {currentRound === 3 ? (
-              // Show all 3 clues in round 3
+            {isLastRound ? (
+              // Show all clues in final round
               caseData.clues.map((clue, idx) => (
                 <motion.div key={idx}
                   initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.1 }}
@@ -363,7 +370,7 @@ export default function GamePlay() {
                     <div className="w-6 h-6 rounded-full bg-amber-900/50 flex items-center justify-center">
                       <span className="text-xs font-black text-amber-400">{idx + 1}</span>
                     </div>
-                    <span className="text-xs font-bold text-amber-400">دليل الجولة {["الأولى", "الثانية", "الثالثة"][idx]}</span>
+                    <span className="text-xs font-bold text-amber-400">دليل الجولة {ROUND_LABELS[idx] ?? idx + 1}</span>
                   </div>
                   <h3 className="font-black text-white text-base mb-2" style={{ fontFamily: "'Cairo', sans-serif" }}>{clue.title}</h3>
                   <p className="text-zinc-300 text-sm leading-relaxed mb-3">{clue.description}</p>
@@ -375,14 +382,14 @@ export default function GamePlay() {
                 </motion.div>
               ))
             ) : (
-              // Current round clue
+              // Current round clue only
               <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}
                 className="p-5 rounded-2xl bg-card border border-amber-900/30">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-6 h-6 rounded-full bg-amber-900/50 flex items-center justify-center">
                     <span className="text-xs font-black text-amber-400">{currentRound}</span>
                   </div>
-                  <span className="text-xs font-bold text-amber-400">دليل الجولة {["الأولى", "الثانية", "الثالثة"][currentRound - 1]}</span>
+                  <span className="text-xs font-bold text-amber-400">دليل الجولة {ROUND_LABELS[currentRound - 1] ?? currentRound}</span>
                 </div>
                 <h3 className="font-black text-white text-lg mb-2" style={{ fontFamily: "'Cairo', sans-serif" }}>{currentClue.title}</h3>
                 <p className="text-zinc-300 text-sm leading-relaxed mb-3">{currentClue.description}</p>
@@ -433,7 +440,7 @@ export default function GamePlay() {
 
   // ─── PHASE: VOTE ─────────────────────────────────────────────
   if (phase === "vote") {
-    const isRound3 = currentRound === 3;
+    const isFinalRound = currentRound === totalRounds;
     const eliminatedInnocents = eliminated.filter(e => !e.wasMafioso).map(e => e.player);
 
     return (
@@ -443,7 +450,7 @@ export default function GamePlay() {
             <div className="flex items-center gap-2 flex-1">
               <Vote className="w-5 h-5 text-red-400" />
               <h1 className="text-lg font-black text-white" style={{ fontFamily: "'Cairo', sans-serif" }}>
-                تصويت الجولة {["الأولى", "الثانية", "الثالثة"][currentRound - 1]}
+                تصويت الجولة {ROUND_LABELS[currentRound - 1] ?? currentRound}
               </h1>
             </div>
             <span className="text-xs text-zinc-500 bg-zinc-800 px-2 py-1 rounded-lg">
@@ -453,10 +460,10 @@ export default function GamePlay() {
         </div>
 
         <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-          {isRound3 && (
+          {isFinalRound && (
             <div className="p-3 rounded-xl bg-amber-950/20 border border-amber-900/30 text-center">
               <p className="text-xs text-amber-400 font-bold" style={{ fontFamily: "'Cairo', sans-serif" }}>
-                الجولة الأخيرة: {eliminatedInnocents.map(p => p.name).join(" و ")} يصوّتان
+                الجولة الأخيرة: {eliminatedInnocents.map(p => p.name).join(" و ")} يصوّتون
               </p>
             </div>
           )}
@@ -677,7 +684,7 @@ export default function GamePlay() {
 
   // ─── PHASE: ROUND RESULT ─────────────────────────────────────
   if (phase === "round_result" && roundResult) {
-    const isLastRound = currentRound === 3;
+    const isLastRound = currentRound === totalRounds;
     const isMafiosoFound = roundResult.wasMafioso;
     const char = caseData.characters.find(c => c.id === roundResult.player.characterId);
     const gameEnded = isMafiosoFound || isLastRound;
@@ -744,7 +751,7 @@ export default function GamePlay() {
               style={{ fontFamily: "'Cairo', sans-serif" }}>
               {isMafiosoFound
                 ? "وجدتم المافيوسو"
-                : `برئ - اللعبة تكمل للجولة ${["الثانية", "الثالثة"][currentRound - 1]}`
+                : `برئ - اللعبة تكمل للجولة ${ROUND_LABELS[currentRound] ?? currentRound + 1}`
               }
             </p>
           </div>
@@ -766,7 +773,7 @@ export default function GamePlay() {
               onClick={handleNextRound}
               className="w-full py-4 bg-red-700 hover:bg-red-600 rounded-2xl font-bold text-white text-lg transition-all glow-red border border-red-600/40"
               style={{ fontFamily: "'Cairo', sans-serif" }}>
-              الجولة {["الثانية", "الثالثة"][currentRound - 1]}
+              الجولة {ROUND_LABELS[currentRound] ?? currentRound + 1}
             </motion.button>
           )}
         </motion.div>
@@ -813,7 +820,7 @@ function GameOverScreen({
             {winner === "innocents" ? "الأبرياء فازوا!" : "المافيوسو فاز!"}
           </h2>
           <p className={`text-sm ${winner === "innocents" ? "text-green-400" : "text-red-400"}`}>
-            {winner === "innocents" ? "كشفتم المجرم بالأدلة والذكاء" : "المافيوسو أفلت من العدالة الثلاث جولات"}
+            {winner === "innocents" ? "كشفتم المجرم بالأدلة والذكاء" : "المافيوسو أفلت من العدالة حتى النهاية"}
           </p>
         </motion.div>
 
