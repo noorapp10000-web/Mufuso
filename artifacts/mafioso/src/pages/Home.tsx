@@ -10,7 +10,7 @@ export default function Home() {
       {/* Street background image */}
       <div className="absolute inset-0">
         <img
-          src="/bg_street_3.png"
+          src="/bg_street_3.webp"
           alt=""
           className="w-full h-full object-cover object-center"
         />
@@ -49,7 +49,7 @@ export default function Home() {
             style={{ boxShadow: "0 0 40px rgba(185,28,28,0.5), 0 0 80px rgba(185,28,28,0.2)" }}
           >
             <img
-              src="/case-images/logo.png"
+              src="/case-images/logo.webp"
               alt="Mafioso Logo"
               className="w-full h-full object-cover"
               onError={(e) => {
