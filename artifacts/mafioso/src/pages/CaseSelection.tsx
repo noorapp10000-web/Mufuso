@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { useLocation } from "wouter";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { CASES } from "@/data/cases";
 import { CASES_5P } from "@/data/allCases";
 import { ArrowRight, MapPin, AlertCircle, Users } from "lucide-react";
@@ -19,14 +20,13 @@ const categoryColors: Record<string, string> = {
   "اختطاف": "text-teal-400 bg-teal-950/40 border-teal-900/40",
 };
 
-function CaseCard({ caseItem, index, badge }: { caseItem: (typeof CASES)[0]; index: number; badge?: string }) {
+function CaseCard({ caseItem, index }: { caseItem: (typeof CASES)[0]; index: number }) {
   const [, setLocation] = useLocation();
   return (
     <motion.div
-      key={caseItem.id}
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.04, duration: 0.4 }}
+      transition={{ delay: index * 0.03, duration: 0.35 }}
       onClick={() => setLocation(`/setup/${caseItem.id}`)}
       className="group cursor-pointer card-hover"
     >
@@ -48,12 +48,6 @@ function CaseCard({ caseItem, index, badge }: { caseItem: (typeof CASES)[0]; ind
           <div className="absolute top-2 right-2 bg-black/60 rounded-lg px-2 py-0.5 text-xs font-bold text-zinc-300 border border-white/10">
             #{String(index + 1).padStart(2, "0")}
           </div>
-          {badge && (
-            <div className="absolute top-2 left-2 bg-purple-900/80 rounded-lg px-2 py-0.5 text-xs font-bold text-purple-300 border border-purple-700/50 flex items-center gap-1">
-              <Users className="w-2.5 h-2.5" />
-              {badge}
-            </div>
-          )}
         </div>
         <div className="p-3 space-y-2">
           <h3 className="font-bold text-sm text-white leading-snug line-clamp-2 group-hover:text-red-300 transition-colors" style={{ fontFamily: "'Cairo', sans-serif" }}>
@@ -73,64 +67,96 @@ function CaseCard({ caseItem, index, badge }: { caseItem: (typeof CASES)[0]; ind
   );
 }
 
+type Tab = "4" | "5";
+
 export default function CaseSelection() {
   const [, setLocation] = useLocation();
+  const [activeTab, setActiveTab] = useState<Tab>("4");
+
+  const activeCases = activeTab === "4" ? CASES : CASES_5P;
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">
+      {/* Header */}
       <div className="sticky top-0 z-20 bg-background/90 backdrop-blur-md border-b border-border/50">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center gap-4">
-          <button
-            onClick={() => setLocation("/")}
-            className="p-2 rounded-xl hover:bg-white/5 transition-colors text-zinc-400 hover:text-white"
-          >
-            <ArrowRight className="w-5 h-5" />
-          </button>
-          <div>
-            <h1 className="text-xl font-black text-white" style={{ fontFamily: "'Cairo', sans-serif" }}>
-              اختر القضية
-            </h1>
-            <p className="text-xs text-zinc-500">
-              {CASES.length + CASES_5P.length} قضية متاحة
-            </p>
+        <div className="max-w-6xl mx-auto px-4 pt-4 pb-0 flex flex-col gap-3">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setLocation("/")}
+              className="p-2 rounded-xl hover:bg-white/5 transition-colors text-zinc-400 hover:text-white"
+            >
+              <ArrowRight className="w-5 h-5" />
+            </button>
+            <div>
+              <h1 className="text-xl font-black text-white" style={{ fontFamily: "'Cairo', sans-serif" }}>
+                اختر القضية
+              </h1>
+              <p className="text-xs text-zinc-500">
+                {CASES.length + CASES_5P.length} قضية متاحة
+              </p>
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex gap-1 relative">
+            {([
+              { key: "4" as Tab, label: "٤ لاعبين", count: CASES.length, color: "red" },
+              { key: "5" as Tab, label: "٥ لاعبين", count: CASES_5P.length, color: "purple" },
+            ] as const).map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`relative flex items-center gap-2 px-5 py-3 text-sm font-bold transition-colors rounded-t-xl ${
+                  activeTab === tab.key
+                    ? tab.color === "red"
+                      ? "text-red-400"
+                      : "text-purple-400"
+                    : "text-zinc-500 hover:text-zinc-300"
+                }`}
+                style={{ fontFamily: "'Cairo', sans-serif" }}
+              >
+                <Users className="w-3.5 h-3.5" />
+                {tab.label}
+                <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${
+                  activeTab === tab.key
+                    ? tab.color === "red"
+                      ? "bg-red-950/60 text-red-400 border border-red-900/40"
+                      : "bg-purple-950/60 text-purple-400 border border-purple-900/40"
+                    : "bg-zinc-800/60 text-zinc-500 border border-zinc-700/40"
+                }`}>
+                  {tab.count}
+                </span>
+                {activeTab === tab.key && (
+                  <motion.div
+                    layoutId="tab-indicator"
+                    className={`absolute bottom-0 left-0 right-0 h-0.5 rounded-full ${
+                      tab.color === "red" ? "bg-red-500" : "bg-purple-500"
+                    }`}
+                    transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                  />
+                )}
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-8 space-y-10">
-        {/* 4-player cases */}
-        <div>
-          <div className="flex items-center gap-3 mb-5">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-red-950/40 border border-red-900/40">
-              <Users className="w-4 h-4 text-red-400" />
-              <span className="text-sm font-bold text-red-300" style={{ fontFamily: "'Cairo', sans-serif" }}>٤ لاعبين</span>
-            </div>
-            <div className="flex-1 h-px bg-border" />
-            <span className="text-xs text-zinc-600">{CASES.length} قضية</span>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {CASES.map((caseItem, index) => (
+      {/* Grid */}
+      <div className="max-w-6xl mx-auto px-4 py-6">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
+          >
+            {activeCases.map((caseItem, index) => (
               <CaseCard key={caseItem.id} caseItem={caseItem} index={index} />
             ))}
-          </div>
-        </div>
-
-        {/* 5-player cases */}
-        <div>
-          <div className="flex items-center gap-3 mb-5">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-purple-950/40 border border-purple-900/40">
-              <Users className="w-4 h-4 text-purple-400" />
-              <span className="text-sm font-bold text-purple-300" style={{ fontFamily: "'Cairo', sans-serif" }}>٥ لاعبين</span>
-            </div>
-            <div className="flex-1 h-px bg-border" />
-            <span className="text-xs text-zinc-600">{CASES_5P.length} قضية</span>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {CASES_5P.map((caseItem, index) => (
-              <CaseCard key={caseItem.id} caseItem={caseItem} index={index} badge="٥ لاعبين" />
-            ))}
-          </div>
-        </div>
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   );
