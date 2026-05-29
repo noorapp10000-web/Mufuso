@@ -61,13 +61,12 @@ export default function PlayerSetup() {
       return;
     }
 
-    const mafiosoIndex = Math.floor(Math.random() * 4);
     const shuffledChars = shuffleArray(caseData.characters);
 
     const players: Player[] = playerNames.map((name, index) => ({
       id: `player_${index}`,
       name: name.trim(),
-      isMafioso: index === mafiosoIndex,
+      isMafioso: shuffledChars[index].id === caseData.culpritId,
       characterId: shuffledChars[index].id,
       characterName: shuffledChars[index].name,
       hasRevealed: false,
