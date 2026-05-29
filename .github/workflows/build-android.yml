@@ -145,7 +145,15 @@ jobs:
 
           echo "=== Icon generation complete ==="
 
-      # ─── 9. Splash screen ─────────────────────────────────────────────────────
+      # ─── 9. Capacitor sync ────────────────────────────────────────────────────
+      - name: Sync Capacitor plugins to Android
+        working-directory: artifacts/mafioso
+        run: |
+          echo "=== Syncing Capacitor ==="
+          pnpm exec cap sync android 2>&1
+          echo "=== Sync complete ==="
+
+      # ─── 10. Splash screen (MUST run after cap sync — sync overwrites drawables)
       - name: Generate splash screen
         working-directory: artifacts/mafioso
         run: |
@@ -153,39 +161,44 @@ jobs:
           ICON_SRC="resources/icon.png"
           RES="android/app/src/main/res"
 
-          mkdir -p "${RES}/drawable" "${RES}/drawable-land" "${RES}/values"
+          mkdir -p "${RES}/drawable" "${RES}/drawable-land" "${RES}/values" "${RES}/values-v31"
 
-          # Portrait
-          convert -size 1080x1920 xc:'#0d0d0d' \
+          # Portrait splash (red background + centered icon)
+          convert -size 1080x1920 xc:'#8B0000' \
             \( "$ICON_SRC" -resize 500x500 \) \
             -gravity center -composite \
             "${RES}/drawable/splash.png"
           echo "  ✓ Portrait: $(du -sh ${RES}/drawable/splash.png | cut -f1)"
 
-          # Landscape
-          convert -size 1920x1080 xc:'#0d0d0d' \
+          # Landscape splash
+          convert -size 1920x1080 xc:'#8B0000' \
             \( "$ICON_SRC" -resize 400x400 \) \
             -gravity center -composite \
             "${RES}/drawable-land/splash.png"
           echo "  ✓ Landscape: $(du -sh ${RES}/drawable-land/splash.png | cut -f1)"
 
-          # Splash background color resource
+          # Splash background color (used by Capacitor plugin + Android theme)
           printf '%s\n' \
             '<?xml version="1.0" encoding="utf-8"?>' \
             '<resources>' \
-            '    <color name="splash_background">#0d0d0d</color>' \
+            '    <color name="splash_background">#8B0000</color>' \
             '</resources>' \
             > "${RES}/values/splash_colors.xml"
 
-          echo "=== Splash screen complete ==="
+          # Android 12+ system splash background (windowSplashScreenBackground)
+          printf '%s\n' \
+            '<?xml version="1.0" encoding="utf-8"?>' \
+            '<resources>' \
+            '    <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">' \
+            '        <item name="windowSplashScreenBackground">#8B0000</item>' \
+            '        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>' \
+            '        <item name="postSplashScreenTheme">@style/AppTheme</item>' \
+            '    </style>' \
+            '</resources>' \
+            > "${RES}/values-v31/splash_styles.xml"
+          echo "  ✓ Android 12+ splash theme"
 
-      # ─── 10. Capacitor sync ───────────────────────────────────────────────────
-      - name: Sync Capacitor plugins to Android
-        working-directory: artifacts/mafioso
-        run: |
-          echo "=== Syncing Capacitor ==="
-          pnpm exec cap sync android 2>&1
-          echo "=== Sync complete ==="
+          echo "=== Splash screen complete ==="
 
       # ─── 11. Gradle permissions ───────────────────────────────────────────────
       - name: Make gradlew executable
