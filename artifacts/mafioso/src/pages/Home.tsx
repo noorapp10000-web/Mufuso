@@ -2,25 +2,53 @@ import { useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { CASES } from "@/data/cases";
 import { CASES_5P, CASES_6P } from "@/data/allCases";
+import { BookOpen, Users, Swords } from "lucide-react";
 
 export default function Home() {
   const [, setLocation] = useLocation();
   const totalCases = CASES.length + CASES_5P.length + CASES_6P.length;
 
+  const stats = [
+    {
+      icon: BookOpen,
+      value: String(totalCases),
+      label: "قضية",
+      color: "text-red-400",
+      glow: "shadow-red-900/60",
+      border: "border-red-900/50",
+      bg: "bg-red-950/40",
+      iconColor: "text-red-500",
+    },
+    {
+      icon: Users,
+      value: "٤-٦",
+      label: "لاعبين",
+      color: "text-amber-400",
+      glow: "shadow-amber-900/60",
+      border: "border-amber-900/50",
+      bg: "bg-amber-950/40",
+      iconColor: "text-amber-500",
+    },
+    {
+      icon: Swords,
+      value: "٣",
+      label: "جولات",
+      color: "text-orange-400",
+      glow: "shadow-orange-900/60",
+      border: "border-orange-900/50",
+      bg: "bg-orange-950/40",
+      iconColor: "text-orange-500",
+    },
+  ];
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden" dir="rtl">
 
-      <div className="absolute inset-0">
-        <img
-          src="/bg_street_3.webp"
-          alt=""
-          className="w-full h-full object-cover object-center"
-        />
-        <div className="absolute inset-0 bg-black/65" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80" />
-        <div className="absolute inset-0 bg-red-950/20" />
-      </div>
+      {/* Page-level overlay (slightly darker than global bg for the home page feel) */}
+      <div className="absolute inset-0 bg-black/20 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80 pointer-events-none" />
 
+      {/* Glow accents */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-red-900/15 rounded-full blur-3xl" />
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-80 h-80 bg-red-950/20 rounded-full blur-3xl" />
@@ -35,6 +63,7 @@ export default function Home() {
         transition={{ duration: 0.6 }}
         className="flex flex-col items-center gap-8 z-10 px-6 text-center"
       >
+        {/* Logo */}
         <motion.div
           initial={{ scale: 0.7, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -60,6 +89,7 @@ export default function Home() {
           </div>
         </motion.div>
 
+        {/* Title */}
         <div className="space-y-2">
           <motion.h1
             initial={{ opacity: 0, y: 15 }}
@@ -98,28 +128,40 @@ export default function Home() {
           </motion.p>
         </div>
 
+        {/* Stat cards */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.75, duration: 0.5 }}
           className="grid grid-cols-3 gap-3 w-full max-w-xs"
         >
-          {[
-            { value: String(totalCases), label: "قضية" },
-            { value: "٤-٦", label: "لاعبين" },
-            { value: "٣", label: "جولات" },
-          ].map((stat, i) => (
-            <div key={i} className="text-center p-3 rounded-2xl bg-black/40 border border-white/[0.10] backdrop-blur-sm">
-              <div className="text-2xl font-black text-red-400" style={{ fontFamily: "'Cairo', sans-serif" }}>
+          {stats.map((stat, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.75 + i * 0.1, duration: 0.4 }}
+              className={`text-center p-3 rounded-2xl border backdrop-blur-sm ${stat.bg} ${stat.border}`}
+              style={{ boxShadow: `0 0 20px var(--tw-shadow-color)` }}
+            >
+              <stat.icon className={`w-4 h-4 mx-auto mb-1 ${stat.iconColor}`} />
+              <div
+                className={`text-2xl font-black ${stat.color}`}
+                style={{
+                  fontFamily: "'Cairo', sans-serif",
+                  textShadow: `0 0 15px currentColor`
+                }}
+              >
                 {stat.value}
               </div>
               <div className="text-xs text-zinc-400 mt-0.5" style={{ fontFamily: "'Cairo', sans-serif" }}>
                 {stat.label}
               </div>
-            </div>
+            </motion.div>
           ))}
         </motion.div>
 
+        {/* Start button */}
         <motion.button
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -137,6 +179,7 @@ export default function Home() {
           <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
         </motion.button>
 
+        {/* Hint */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -148,6 +191,7 @@ export default function Home() {
         </motion.p>
       </motion.div>
 
+      {/* Bullet decorations */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

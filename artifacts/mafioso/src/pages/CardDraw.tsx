@@ -43,7 +43,7 @@ export default function CardDraw() {
 
   if (allDone) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6" dir="rtl">
+      <div className="min-h-screen flex flex-col items-center justify-center px-6" dir="rtl">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -84,8 +84,8 @@ export default function CardDraw() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col" dir="rtl">
-      <div className="sticky top-0 z-20 bg-background/90 backdrop-blur-md border-b border-border/50">
+    <div className="min-h-screen flex flex-col" dir="rtl">
+      <div className="sticky top-0 z-20 bg-black/70 backdrop-blur-md border-b border-white/10">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
           <div className="flex items-center gap-3 flex-1">
             <h1 className="text-lg font-black text-white" style={{ fontFamily: "'Cairo', sans-serif" }}>

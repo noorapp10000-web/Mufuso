@@ -49,6 +49,17 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <GameProvider>
+          {/* Global fixed background — visible on every page */}
+          <div className="fixed inset-0 -z-10 pointer-events-none" aria-hidden="true">
+            <img
+              src="/bg_street_3.webp"
+              alt=""
+              className="w-full h-full object-cover object-center"
+            />
+            <div className="absolute inset-0 bg-black/78" />
+            <div className="absolute inset-0 bg-red-950/12" />
+          </div>
+
           <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
             <Router />
           </WouterRouter>

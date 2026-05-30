@@ -139,8 +139,8 @@ export default function CaseSelection() {
   }
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
-      <div className="sticky top-0 z-20 bg-background/90 backdrop-blur-md border-b border-border/50">
+    <div className="min-h-screen" dir="rtl">
+      <div className="sticky top-0 z-20 bg-black/70 backdrop-blur-md border-b border-white/10">
         <div className="max-w-6xl mx-auto px-4 pt-4 pb-3 flex flex-col gap-3">
           <div className="flex items-center gap-4">
             <button

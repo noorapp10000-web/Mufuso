@@ -103,8 +103,8 @@ export default function PlayerSetup() {
   const playerCountForRoute = caseData.playerCount ?? 4;
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
-      <div className="sticky top-0 z-20 bg-background/90 backdrop-blur-md border-b border-border/50">
+    <div className="min-h-screen" dir="rtl">
+      <div className="sticky top-0 z-20 bg-black/70 backdrop-blur-md border-b border-white/10">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
           <button
             onClick={() => setLocation(`/cases/${playerCountForRoute}`)}
@@ -249,7 +249,7 @@ export default function PlayerSetup() {
           className="p-4 rounded-2xl bg-amber-950/20 border border-amber-900/30"
         >
           <p className="text-sm text-amber-400/80 leading-relaxed text-center" style={{ fontFamily: "'Cairo', sans-serif" }}>
-            سيختار النظام المافيوسو بشكل عشوائي. اللعبة تستمر ٣ جولات. كل جولة دليل وتصويت.
+            سيختار النظام المافيوسو عشوائياً. كل قضية فيها ٣ جولات — جولة = دليل جديد + نقاش + تصويت لطرد مشتبه. عدد اللاعبين لا يغير عدد الجولات.
           </p>
         </motion.div>
 

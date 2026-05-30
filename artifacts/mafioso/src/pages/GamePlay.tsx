@@ -177,13 +177,19 @@ export default function GamePlay() {
       wasMafioso: player.isMafioso,
     };
     const newEliminated = [...eliminated, record];
+    const newActivePlayers = activePlayers.filter(p => p.id !== player.id);
     setEliminated(newEliminated);
     setRoundResult(record);
-    setActivePlayers(prev => prev.filter(p => p.id !== player.id));
+    setActivePlayers(newActivePlayers);
     setVotes([]);
 
     if (player.isMafioso) {
-      setGameWinner("innocents");
+      // Only declare innocents win when ALL mafiosos are gone
+      const remainingMafiosos = newActivePlayers.filter(p => p.isMafioso);
+      if (remainingMafiosos.length === 0) {
+        setGameWinner("innocents");
+      }
+      // If partner still alive, game continues after showing this result
       setPhase("round_result");
     } else if (currentRound === totalRounds) {
       setGameWinner("mafioso");
@@ -220,8 +226,8 @@ export default function GamePlay() {
   // ─── PHASE: CASE INTRO ───────────────────────────────────────
   if (phase === "case_intro") {
     return (
-      <div className="min-h-screen bg-background" dir="rtl">
-        <div className="sticky top-0 z-20 bg-background/90 backdrop-blur-md border-b border-border/50">
+      <div className="min-h-screen" dir="rtl">
+        <div className="sticky top-0 z-20 bg-black/70 backdrop-blur-md border-b border-white/10">
           <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
             <button onClick={() => setLocation("/cases")} className="p-2 rounded-xl hover:bg-white/5 transition-colors text-zinc-400 hover:text-white">
               <ArrowRight className="w-5 h-5" />
@@ -323,8 +329,8 @@ export default function GamePlay() {
     const timerColor = timerPercent > 50 ? "bg-green-500" : timerPercent > 25 ? "bg-amber-500" : "bg-red-500";
 
     return (
-      <div className="min-h-screen bg-background" dir="rtl">
-        <div className="sticky top-0 z-20 bg-background/90 backdrop-blur-md border-b border-border/50">
+      <div className="min-h-screen" dir="rtl">
+        <div className="sticky top-0 z-20 bg-black/70 backdrop-blur-md border-b border-white/10">
           <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
             <div className="flex items-center gap-2 bg-red-950/40 border border-red-900/40 rounded-xl px-3 py-2">
               <Timer className="w-4 h-4 text-red-400" />
@@ -445,8 +451,8 @@ export default function GamePlay() {
     const eliminatedInnocents = eliminated.filter(e => !e.wasMafioso).map(e => e.player);
 
     return (
-      <div className="min-h-screen bg-background" dir="rtl">
-        <div className="sticky top-0 z-20 bg-background/90 backdrop-blur-md border-b border-border/50">
+      <div className="min-h-screen" dir="rtl">
+        <div className="sticky top-0 z-20 bg-black/70 backdrop-blur-md border-b border-white/10">
           <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-3">
             <div className="flex items-center gap-2 flex-1">
               <Vote className="w-5 h-5 text-red-400" />
@@ -567,8 +573,8 @@ export default function GamePlay() {
     const timerPct = (timeLeft / defenseSeconds) * 100;
 
     return (
-      <div className="min-h-screen bg-background flex flex-col" dir="rtl">
-        <div className="sticky top-0 z-20 bg-background/90 backdrop-blur-md border-b border-border/50">
+      <div className="min-h-screen flex flex-col" dir="rtl">
+        <div className="sticky top-0 z-20 bg-black/70 backdrop-blur-md border-b border-white/10">
           <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-3">
             <div className="flex items-center gap-2 bg-amber-950/40 border border-amber-900/40 rounded-xl px-3 py-2">
               <Timer className="w-4 h-4 text-amber-400" />
@@ -685,13 +691,14 @@ export default function GamePlay() {
 
   // ─── PHASE: ROUND RESULT ─────────────────────────────────────
   if (phase === "round_result" && roundResult) {
-    const isLastRound = currentRound === totalRounds;
     const isMafiosoFound = roundResult.wasMafioso;
     const char = caseData.characters.find(c => c.id === roundResult.player.characterId);
-    const gameEnded = isMafiosoFound || isLastRound;
+    // Game ends only when gameWinner is resolved
+    const gameEnded = gameWinner !== null;
+    // Mafioso eliminated but partner still alive (6-player with 2 mafiosos)
+    const partnerStillAlive = isMafiosoFound && gameWinner === null;
 
-    if (gameEnded && isMafiosoFound) {
-      // Innocents won
+    if (gameEnded && gameWinner === "innocents") {
       return <GameOverScreen
         winner="innocents"
         eliminated={[...eliminated]}
@@ -706,8 +713,7 @@ export default function GamePlay() {
       />;
     }
 
-    if (gameEnded && !isMafiosoFound) {
-      // Mafioso won (3 rounds done, mafioso survived)
+    if (gameEnded && gameWinner === "mafioso") {
       return <GameOverScreen
         winner="mafioso"
         eliminated={[...eliminated]}
@@ -723,7 +729,7 @@ export default function GamePlay() {
     }
 
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6" dir="rtl">
+      <div className="min-h-screen flex flex-col items-center justify-center px-6" dir="rtl">
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
           className="max-w-md w-full space-y-8 text-center">
           {/* Result badge */}
@@ -748,17 +754,27 @@ export default function GamePlay() {
             <p className="text-zinc-400 text-sm">
               {char?.name} - {char?.profession}
             </p>
-            <p className={`text-base font-bold mt-2 ${isMafiosoFound ? "text-red-300" : "text-zinc-300"}`}
+            <p className={`text-base font-bold mt-2 ${
+              partnerStillAlive ? "text-amber-300" : isMafiosoFound ? "text-red-300" : "text-zinc-300"
+            }`}
               style={{ fontFamily: "'Cairo', sans-serif" }}>
-              {isMafiosoFound
-                ? "وجدتم المافيوسو"
-                : `برئ - اللعبة تكمل للجولة ${ROUND_LABELS[currentRound] ?? currentRound + 1}`
+              {partnerStillAlive
+                ? "كُشف أحد المافيوسو — الشريك لا يزال طليقاً!"
+                : isMafiosoFound
+                  ? "وجدتم المافيوسو"
+                  : `برئ - اللعبة تكمل للجولة ${ROUND_LABELS[currentRound] ?? currentRound + 1}`
               }
             </p>
           </div>
 
-          {/* Eliminated player card reveal */}
-          <div className={`p-4 rounded-2xl border ${isMafiosoFound ? "bg-red-950/20 border-red-900/40" : "bg-zinc-900/50 border-zinc-800"}`}>
+          {/* Eliminated player role reveal */}
+          <div className={`p-4 rounded-2xl border ${
+            partnerStillAlive
+              ? "bg-amber-950/20 border-amber-900/40"
+              : isMafiosoFound
+                ? "bg-red-950/20 border-red-900/40"
+                : "bg-zinc-900/50 border-zinc-800"
+          }`}>
             <p className="text-xs text-zinc-500 mb-2">دوره كان:</p>
             <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl font-bold ${
               isMafiosoFound ? "bg-red-900/50 text-red-300" : "bg-green-900/30 text-green-300"
@@ -766,15 +782,28 @@ export default function GamePlay() {
               {isMafiosoFound ? <Skull className="w-4 h-4" /> : <Shield className="w-4 h-4" />}
               {isMafiosoFound ? "المافيوسو" : "بريء"}
             </div>
+            {partnerStillAlive && (
+              <p className="text-amber-400/90 text-sm mt-3 font-bold text-center"
+                style={{ fontFamily: "'Cairo', sans-serif" }}>
+                ⚠️ لا يزال هناك مافيوسو آخر في اللعبة!
+              </p>
+            )}
           </div>
 
-          {!isMafiosoFound && (
+          {(!isMafiosoFound || partnerStillAlive) && (
             <motion.button
               whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
               onClick={handleNextRound}
-              className="w-full py-4 bg-red-700 hover:bg-red-600 rounded-2xl font-bold text-white text-lg transition-all glow-red border border-red-600/40"
+              className={`w-full py-4 rounded-2xl font-bold text-white text-lg transition-all border ${
+                partnerStillAlive
+                  ? "bg-amber-700 hover:bg-amber-600 border-amber-600/40"
+                  : "bg-red-700 hover:bg-red-600 glow-red border-red-600/40"
+              }`}
               style={{ fontFamily: "'Cairo', sans-serif" }}>
-              الجولة {ROUND_LABELS[currentRound] ?? currentRound + 1}
+              {partnerStillAlive
+                ? `الجولة ${ROUND_LABELS[currentRound] ?? currentRound + 1} — ابحثوا عن الشريك!`
+                : `الجولة ${ROUND_LABELS[currentRound] ?? currentRound + 1}`
+              }
             </motion.button>
           )}
         </motion.div>
@@ -803,7 +832,7 @@ function GameOverScreen({
 }) {
   if (!caseData) return null;
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
+    <div className="min-h-screen" dir="rtl">
       <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
         {/* Winner banner */}
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
