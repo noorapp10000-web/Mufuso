@@ -1,0 +1,36 @@
+name: Deploy Server → Hugging Face
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'artifacts/api-server/**'
+      - 'lib/**'
+      - 'package.json'
+      - 'pnpm-workspace.yaml'
+      - 'pnpm-lock.yaml'
+      - 'tsconfig*.json'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Push server to HF Space
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Push to Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "GitHub Actions"
+
+          git remote add hf https://Seifoooo:${HF_TOKEN}@huggingface.co/spaces/Seifoooo/mafioso-server
+
+          git push hf main:main --force

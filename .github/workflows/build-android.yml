@@ -54,6 +54,8 @@ jobs:
       # ─── 6. Build web app ─────────────────────────────────────────────────────
       - name: Build web app (Vite)
         working-directory: artifacts/mafioso
+        env:
+          VITE_API_URL: https://seifoooo-mafioso-server.hf.space
         run: |
           echo "=== Building web app for APK ==="
           pnpm run build:apk
