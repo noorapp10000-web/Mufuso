@@ -22,7 +22,26 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          lfs: true
+
+      # Build a clean server-only directory — no images or frontend assets
+      # so Hugging Face does not reject the push for binary files
+      - name: Assemble server-only directory
+        run: |
+          mkdir -p /tmp/hf-deploy
+
+          # Server source
+          cp -r artifacts/api-server /tmp/hf-deploy/artifacts/
+          # Shared libraries (db, api-zod, api-spec, api-client-react)
+          cp -r lib /tmp/hf-deploy/
+
+          # Workspace config (needed for pnpm workspaces + build)
+          cp package.json         /tmp/hf-deploy/
+          cp pnpm-workspace.yaml  /tmp/hf-deploy/
+          cp pnpm-lock.yaml       /tmp/hf-deploy/
+          cp tsconfig*.json       /tmp/hf-deploy/ 2>/dev/null || true
+
+          echo "=== Files to deploy ==="
+          find /tmp/hf-deploy -type f | sort
 
       - name: Push to Hugging Face Space
         env:
@@ -31,6 +50,10 @@ jobs:
           git config --global user.email "github-actions@github.com"
           git config --global user.name "GitHub Actions"
 
-          git remote add hf https://Seifoooo:${HF_TOKEN}@huggingface.co/spaces/Seifoooo/mafioso-server
+          cd /tmp/hf-deploy
+          git init
+          git add .
+          git commit -m "deploy: ${GITHUB_SHA:0:7} from ${GITHUB_REF_NAME}"
 
+          git remote add hf https://Seifoooo:${HF_TOKEN}@huggingface.co/spaces/Seifoooo/mafioso-server
           git push hf main:main --force

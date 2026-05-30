@@ -49,54 +49,23 @@ jobs:
         working-directory: artifacts/mafioso
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
-          for PERM in \
-            "android.permission.RECORD_AUDIO" \
-            "android.permission.MODIFY_AUDIO_SETTINGS"; do
+          for PERM in "android.permission.RECORD_AUDIO" "android.permission.MODIFY_AUDIO_SETTINGS"; do
             if ! grep -q "$PERM" "$MANIFEST"; then
               sed -i "s|<uses-permission android:name=\"android.permission.INTERNET\"|<uses-permission android:name=\"$PERM\" />\n    <uses-permission android:name=\"android.permission.INTERNET\"|" "$MANIFEST"
-              echo "✓ Added $PERM"
+              echo "Added: $PERM"
             else
-              echo "✓ Already present: $PERM"
+              echo "Already present: $PERM"
             fi
           done
           grep "uses-permission" "$MANIFEST"
 
-      # Patch MainActivity to request microphone permission at runtime (Android 6+)
+      # Patch MainActivity to request mic at runtime — base64 avoids << YAML conflict
       - name: Patch MainActivity for microphone runtime permission
         working-directory: artifacts/mafioso
         run: |
           MAIN="android/app/src/main/java/com/mafioso/game/MainActivity.java"
-          cat > "$MAIN" << 'JAVA'
-package com.mafioso.game;
-
-import android.Manifest;
-import android.content.pm.PackageManager;
-import android.os.Bundle;
-import android.webkit.PermissionRequest;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import com.getcapacitor.BridgeActivity;
-
-public class MainActivity extends BridgeActivity {
-    private static final int MIC_PERMISSION_CODE = 100;
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        // Request microphone permission at runtime (required Android 6+)
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                new String[]{
-                    Manifest.permission.RECORD_AUDIO,
-                    Manifest.permission.MODIFY_AUDIO_SETTINGS
-                },
-                MIC_PERMISSION_CODE);
-        }
-    }
-}
-JAVA
-          echo "✓ MainActivity patched for runtime microphone permission"
+          echo "cGFja2FnZSBjb20ubWFmaW9zby5nYW1lOwoKaW1wb3J0IGFuZHJvaWQuTWFuaWZlc3Q7CmltcG9ydCBhbmRyb2lkLmNvbnRlbnQucG0uUGFja2FnZU1hbmFnZXI7CmltcG9ydCBhbmRyb2lkLm9zLkJ1bmRsZTsKaW1wb3J0IGFuZHJvaWQud2Via2l0LlBlcm1pc3Npb25SZXF1ZXN0OwppbXBvcnQgYW5kcm9pZHguY29yZS5hcHAuQWN0aXZpdHlDb21wYXQ7CmltcG9ydCBhbmRyb2lkeC5jb3JlLmNvbnRlbnQuQ29udGV4dENvbXBhdDsKaW1wb3J0IGNvbS5nZXRjYXBhY2l0b3IuQnJpZGdlQWN0aXZpdHk7CgpwdWJsaWMgY2xhc3MgTWFpbkFjdGl2aXR5IGV4dGVuZHMgQnJpZGdlQWN0aXZpdHkgewogICAgcHJpdmF0ZSBzdGF0aWMgZmluYWwgaW50IE1JQ19QRVJNSVNTSU9OX0NPREUgPSAxMDA7CgogICAgQE92ZXJyaWRlCiAgICBwdWJsaWMgdm9pZCBvbkNyZWF0ZShCdW5kbGUgc2F2ZWRJbnN0YW5jZVN0YXRlKSB7CiAgICAgICAgc3VwZXIub25DcmVhdGUoc2F2ZWRJbnN0YW5jZVN0YXRlKTsKICAgICAgICAvLyBSZXF1ZXN0IG1pY3JvcGhvbmUgcGVybWlzc2lvbiBhdCBydW50aW1lIChyZXF1aXJlZCBBbmRyb2lkIDYrKQogICAgICAgIGlmIChDb250ZXh0Q29tcGF0LmNoZWNrU2VsZlBlcm1pc3Npb24odGhpcywgTWFuaWZlc3QucGVybWlzc2lvbi5SRUNPUkRfQVVESU8pCiAgICAgICAgICAgICAgICAhPSBQYWNrYWdlTWFuYWdlci5QRVJNSVNTSU9OX0dSQU5URUQpIHsKICAgICAgICAgICAgQWN0aXZpdHlDb21wYXQucmVxdWVzdFBlcm1pc3Npb25zKHRoaXMsCiAgICAgICAgICAgICAgICBuZXcgU3RyaW5nW117CiAgICAgICAgICAgICAgICAgICAgTWFuaWZlc3QucGVybWlzc2lvbi5SRUNPUkRfQVVESU8sCiAgICAgICAgICAgICAgICAgICAgTWFuaWZlc3QucGVybWlzc2lvbi5NT0RJRllfQVVESU9fU0VUVElOR1MKICAgICAgICAgICAgICAgIH0sCiAgICAgICAgICAgICAgICBNSUNfUEVSTUlTU0lPTl9DT0RFKTsKICAgICAgICB9CiAgICB9Cn0K" | base64 -d > "$MAIN"
+          echo "MainActivity patched"
 
       - name: Build Debug APK
         working-directory: artifacts/mafioso/android
