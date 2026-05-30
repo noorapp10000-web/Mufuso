@@ -32,6 +32,11 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
 
+// Convenience aliases accessible without /api prefix
+app.get(["/health", "/healthz"], (_req, res) => {
+  res.json({ status: "ok" });
+});
+
 if (process.env.NODE_ENV === "production") {
   const staticDir = path.join(process.cwd(), "artifacts/mafioso/dist/public");
   app.use(express.static(staticDir));
