@@ -641,3 +641,9 @@ id = "wyRpyQvgsWVqMrYDoWqwm"
 uri = "file://artifacts/mafioso/public/mascot/mascot_warning.webp"
 type = "image"
 title = "Warning / Attention"
+
+[[outputs]]
+id = "Se4Ky1esAOLsiW2P3wiRZ"
+uri = "file://hf-server.tar.gz"
+type = "unspecified"
+title = "mafioso-server (HF Deploy)"
