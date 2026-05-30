@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { useOnline } from "@/context/OnlineContext";
-import { ArrowRight, Plus, Users, Wifi, WifiOff, AlertCircle, X } from "lucide-react";
+import { ArrowRight, Plus, Users, Wifi, WifiOff, AlertCircle, X, Server } from "lucide-react";
 
 type Tab = "create" | "join";
 
@@ -14,6 +14,14 @@ export default function OnlineMenu() {
   const [playerName, setPlayerName] = useState("");
   const [roomCode, setRoomCode] = useState("");
   const [loading, setLoading] = useState(false);
+  const [connectSeconds, setConnectSeconds] = useState(0);
+
+  // Count seconds while not connected — helps user know the server is waking up
+  useEffect(() => {
+    if (connected) { setConnectSeconds(0); return; }
+    const t = setInterval(() => setConnectSeconds(s => s + 1), 1000);
+    return () => clearInterval(t);
+  }, [connected]);
 
   // Navigate to room when connected
   if (room) {
@@ -190,9 +198,45 @@ export default function OnlineMenu() {
             </motion.button>
 
             {!connected && (
-              <p className="text-center text-xs text-zinc-500" style={{ fontFamily: "'Cairo', sans-serif" }}>
-                جاري الاتصال بالسيرفر...
-              </p>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="rounded-2xl bg-zinc-900/80 border border-zinc-800 p-4 space-y-3"
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <Server className="w-4 h-4 text-zinc-400 shrink-0" />
+                  <p className="text-sm font-bold text-zinc-300" style={{ fontFamily: "'Cairo', sans-serif" }}>
+                    جاري تشغيل السيرفر...
+                  </p>
+                  {/* animated dots */}
+                  <span className="flex gap-0.5">
+                    {[0,1,2].map(i => (
+                      <motion.span
+                        key={i}
+                        className="w-1 h-1 rounded-full bg-zinc-500"
+                        animate={{ opacity: [0.3, 1, 0.3] }}
+                        transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }}
+                      />
+                    ))}
+                  </span>
+                </div>
+
+                {connectSeconds > 5 && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-center text-xs text-zinc-500 leading-relaxed"
+                    style={{ fontFamily: "'Cairo', sans-serif" }}
+                  >
+                    {connectSeconds < 20
+                      ? "السيرفر بيصحى من النوم، استنى ثوانٍ..."
+                      : connectSeconds < 45
+                      ? `بيشتغل... (${connectSeconds}ث) — ممكن ياخد لحد دقيقة`
+                      : "لو استنيت كتير تأكد من الاتصال بالإنترنت"
+                    }
+                  </motion.p>
+                )}
+              </motion.div>
             )}
           </motion.div>
         </AnimatePresence>
