@@ -1,10 +1,9 @@
 import { useState, useMemo } from "react";
-import { useLocation } from "wouter";
+import { useLocation, useParams } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { CASES } from "@/data/cases";
 import { CASES_5P, CASES_6P } from "@/data/allCases";
-import { ArrowRight, MapPin, AlertCircle, Users, Shuffle, X } from "lucide-react";
-import Mascot from "@/components/Mascot";
+import { ArrowRight, MapPin, AlertCircle, Shuffle, X } from "lucide-react";
 
 const categoryColors: Record<string, string> = {
   "جريمة قتل":     "text-red-400 bg-red-950/40 border-red-900/40",
@@ -40,6 +39,24 @@ const categoryFilterColors: Record<string, string> = {
   "اختطاف":         "border-teal-700/70 bg-teal-900/30 text-teal-300",
   "تجسس":           "border-violet-700/70 bg-violet-900/30 text-violet-300",
   "تهريب":          "border-lime-700/70 bg-lime-900/30 text-lime-300",
+};
+
+const COUNT_CONFIG: Record<string, { cases: typeof CASES; label: string; randomBtnClass: string }> = {
+  "4": {
+    cases: CASES,
+    label: "٤ لاعبين",
+    randomBtnClass: "bg-red-900/40 hover:bg-red-800/50 border-red-800/50 hover:border-red-600/60 text-red-300",
+  },
+  "5": {
+    cases: CASES_5P as typeof CASES,
+    label: "٥ لاعبين",
+    randomBtnClass: "bg-purple-900/40 hover:bg-purple-800/50 border-purple-800/50 hover:border-purple-600/60 text-purple-300",
+  },
+  "6": {
+    cases: CASES_6P as typeof CASES,
+    label: "٦ لاعبين",
+    randomBtnClass: "bg-blue-900/40 hover:bg-blue-800/50 border-blue-800/50 hover:border-blue-600/60 text-blue-300",
+  },
 };
 
 type AnyCase = (typeof CASES)[0];
@@ -93,42 +110,15 @@ function CaseCard({ caseItem, index }: { caseItem: AnyCase; index: number }) {
   );
 }
 
-type Tab = "4" | "5" | "6";
-
-const TAB_CONFIG = [
-  { key: "4" as Tab, label: "٤ لاعبين", cases: CASES,     color: "red"    },
-  { key: "5" as Tab, label: "٥ لاعبين", cases: CASES_5P,  color: "purple" },
-  { key: "6" as Tab, label: "٦ لاعبين", cases: CASES_6P,  color: "blue"   },
-] as const;
-
-const TAB_ACTIVE_CLASS: Record<Tab, string> = {
-  "4": "text-red-400",
-  "5": "text-purple-400",
-  "6": "text-blue-400",
-};
-const TAB_BADGE_ACTIVE: Record<Tab, string> = {
-  "4": "bg-red-950/60 text-red-400 border border-red-900/40",
-  "5": "bg-purple-950/60 text-purple-400 border border-purple-900/40",
-  "6": "bg-blue-950/60 text-blue-400 border border-blue-900/40",
-};
-const TAB_INDICATOR_COLOR: Record<Tab, string> = {
-  "4": "bg-red-500",
-  "5": "bg-purple-500",
-  "6": "bg-blue-500",
-};
-const RANDOM_BTN_ACTIVE: Record<Tab, string> = {
-  "4": "bg-red-900/40 hover:bg-red-800/50 border-red-800/50 hover:border-red-600/60 text-red-300",
-  "5": "bg-purple-900/40 hover:bg-purple-800/50 border-purple-800/50 hover:border-purple-600/60 text-purple-300",
-  "6": "bg-blue-900/40 hover:bg-blue-800/50 border-blue-800/50 hover:border-blue-600/60 text-blue-300",
-};
-
 export default function CaseSelection() {
   const [, setLocation] = useLocation();
-  const [activeTab, setActiveTab] = useState<Tab>("4");
+  const { count } = useParams<{ count: string }>();
+  const config = COUNT_CONFIG[count ?? "4"] ?? COUNT_CONFIG["4"];
+
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [randomFlash, setRandomFlash] = useState(false);
 
-  const allCases = TAB_CONFIG.find((t) => t.key === activeTab)!.cases as AnyCase[];
+  const allCases = config.cases as AnyCase[];
 
   const categories = useMemo(() => {
     const cats = new Set(allCases.map((c) => c.category));
@@ -148,21 +138,13 @@ export default function CaseSelection() {
     setTimeout(() => setLocation(`/setup/${pick.id}`), 300);
   }
 
-  function handleTabChange(tab: Tab) {
-    setActiveTab(tab);
-    setSelectedCategory(null);
-  }
-
-  const totalCases = CASES.length + CASES_5P.length + CASES_6P.length;
-
   return (
     <div className="min-h-screen bg-background" dir="rtl">
-      {/* Header */}
       <div className="sticky top-0 z-20 bg-background/90 backdrop-blur-md border-b border-border/50">
-        <div className="max-w-6xl mx-auto px-4 pt-4 pb-0 flex flex-col gap-3">
+        <div className="max-w-6xl mx-auto px-4 pt-4 pb-3 flex flex-col gap-3">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => setLocation("/")}
+              onClick={() => setLocation("/cases")}
               className="p-2 rounded-xl hover:bg-white/5 transition-colors text-zinc-400 hover:text-white"
             >
               <ArrowRight className="w-5 h-5" />
@@ -172,64 +154,26 @@ export default function CaseSelection() {
                 اختر القضية
               </h1>
               <p className="text-xs text-zinc-500">
-                {totalCases} قضية متاحة
+                {config.label} · {allCases.length} قضية متاحة
               </p>
             </div>
 
-            <Mascot pose="presenting" height={56} delay={0.1} floatAnimation={false} />
-
-            {/* Random button */}
             <motion.button
               whileTap={{ scale: 0.92 }}
               animate={randomFlash ? { scale: [1, 1.12, 1] } : {}}
               onClick={handleRandom}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all text-sm font-bold ${RANDOM_BTN_ACTIVE[activeTab]}`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all text-sm font-bold ${config.randomBtnClass}`}
               style={{ fontFamily: "'Cairo', sans-serif" }}
             >
               <Shuffle className="w-4 h-4" />
               عشوائي
             </motion.button>
           </div>
-
-          {/* Tabs */}
-          <div className="flex gap-1 relative">
-            {TAB_CONFIG.map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => handleTabChange(tab.key)}
-                className={`relative flex items-center gap-2 px-5 py-3 text-sm font-bold transition-colors rounded-t-xl ${
-                  activeTab === tab.key
-                    ? TAB_ACTIVE_CLASS[tab.key]
-                    : "text-zinc-500 hover:text-zinc-300"
-                }`}
-                style={{ fontFamily: "'Cairo', sans-serif" }}
-              >
-                <Users className="w-3.5 h-3.5" />
-                {tab.label}
-                <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${
-                  activeTab === tab.key
-                    ? TAB_BADGE_ACTIVE[tab.key]
-                    : "bg-zinc-800/60 text-zinc-500 border border-zinc-700/40"
-                }`}>
-                  {tab.cases.length}
-                </span>
-                {activeTab === tab.key && (
-                  <motion.div
-                    layoutId="tab-indicator"
-                    className={`absolute bottom-0 left-0 right-0 h-0.5 rounded-full ${TAB_INDICATOR_COLOR[tab.key]}`}
-                    transition={{ type: "spring", stiffness: 500, damping: 35 }}
-                  />
-                )}
-              </button>
-            ))}
-          </div>
         </div>
       </div>
 
-      {/* Category filters */}
       <div className="max-w-6xl mx-auto px-4 pt-4 pb-0">
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
-          {/* All button */}
           <button
             onClick={() => setSelectedCategory(null)}
             className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
@@ -244,7 +188,7 @@ export default function CaseSelection() {
           </button>
 
           {categories.map((cat) => {
-            const count = allCases.filter((c) => c.category === cat).length;
+            const count2 = allCases.filter((c) => c.category === cat).length;
             const isActive = selectedCategory === cat;
             const activeStyle = categoryFilterColors[cat] || "border-zinc-600 bg-zinc-800/50 text-zinc-300";
             return (
@@ -259,14 +203,13 @@ export default function CaseSelection() {
                 style={{ fontFamily: "'Cairo', sans-serif" }}
               >
                 {cat}
-                <span className="opacity-60">({count})</span>
+                <span className="opacity-60">({count2})</span>
                 {isActive && <X className="w-3 h-3 opacity-70" />}
               </button>
             );
           })}
         </div>
 
-        {/* Results count */}
         <AnimatePresence mode="wait">
           {selectedCategory && (
             <motion.p
@@ -282,11 +225,10 @@ export default function CaseSelection() {
         </AnimatePresence>
       </div>
 
-      {/* Grid */}
       <div className="max-w-6xl mx-auto px-4 py-4">
         <AnimatePresence mode="wait">
           <motion.div
-            key={activeTab + (selectedCategory ?? "all")}
+            key={selectedCategory ?? "all"}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
@@ -299,7 +241,6 @@ export default function CaseSelection() {
           </motion.div>
         </AnimatePresence>
 
-        {/* Empty state */}
         {filteredCases.length === 0 && (
           <motion.div
             initial={{ opacity: 0 }}

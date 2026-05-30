@@ -3,7 +3,7 @@ import { useLocation, useParams } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { getCaseById as getCase } from "@/data/allCases";
 import { useGame } from "@/context/GameContext";
-import { ArrowRight, Eye, EyeOff, Shield, Skull } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Shield, Skull, Users } from "lucide-react";
 
 export default function CardDraw() {
   const { caseId } = useParams<{ caseId: string }>();
@@ -85,7 +85,6 @@ export default function CardDraw() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col" dir="rtl">
-      {/* Header */}
       <div className="sticky top-0 z-20 bg-background/90 backdrop-blur-md border-b border-border/50">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
           <div className="flex items-center gap-3 flex-1">
@@ -96,7 +95,6 @@ export default function CardDraw() {
               {currentPlayerIndex + 1} / {gameState.players.length}
             </span>
           </div>
-          {/* Progress */}
           <div className="flex gap-1.5">
             {gameState.players.map((_, i) => (
               <div
@@ -113,7 +111,6 @@ export default function CardDraw() {
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-8 max-w-md mx-auto w-full">
-        {/* Player name prompt */}
         <AnimatePresence mode="wait">
           <motion.div
             key={currentPlayerIndex}
@@ -130,7 +127,6 @@ export default function CardDraw() {
               <p className="text-zinc-500 text-sm">اضغط على البطاقة لرؤية دورك سراً</p>
             </div>
 
-            {/* Card */}
             <div className="flip-card w-full mx-auto" style={{ height: "min(520px, calc(100svh - 220px))" }}>
               <div className={`flip-card-inner w-full h-full ${cardFlipped ? "flipped" : ""}`}>
                 {/* Card Back */}
@@ -146,7 +142,6 @@ export default function CardDraw() {
                       <p className="text-zinc-400 text-sm font-medium">اضغط لكشف بطاقتك</p>
                       <p className="text-zinc-600 text-xs mt-1">تأكد أن الآخرين لا يرون</p>
                     </div>
-                    {/* Card pattern */}
                     <div className="absolute inset-0 rounded-3xl overflow-hidden opacity-5">
                       <div className="absolute inset-0 grid grid-cols-8 grid-rows-12 gap-1 p-4">
                         {[...Array(96)].map((_, i) => (
@@ -223,7 +218,22 @@ export default function CardDraw() {
                           </p>
                         </div>
 
-                        {currentPlayer.isMafioso && (
+                        {currentPlayer.isMafioso && currentPlayer.mafiosoPartnerName && (
+                          <div className="p-3 rounded-xl bg-red-950/40 border border-red-700/50">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Users className="w-3.5 h-3.5 text-red-400" />
+                              <p className="text-xs text-red-400 font-bold">شريكك المافيوسو</p>
+                            </div>
+                            <p className="text-base font-black text-white" style={{ fontFamily: "'Cairo', sans-serif" }}>
+                              {currentPlayer.mafiosoPartnerName}
+                            </p>
+                            <p className="text-xs text-red-300/70 mt-1">
+                              أنتما اثنان. لا تكشفوا بعضكم أمام الأبرياء.
+                            </p>
+                          </div>
+                        )}
+
+                        {currentPlayer.isMafioso && !currentPlayer.mafiosoPartnerName && (
                           <div className="p-3 rounded-xl bg-red-950/20 border border-red-900/30">
                             <p className="text-xs text-red-400 font-bold text-center" style={{ fontFamily: "'Cairo', sans-serif" }}>
                               لا تكشف نفسك. أضلل الأبرياء.

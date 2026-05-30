@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { getCaseById as getCase } from "@/data/allCases";
 import { useGame, Player } from "@/context/GameContext";
 import { ArrowRight, User, MapPin, Clock } from "lucide-react";
-import Mascot from "@/components/Mascot";
 
 function shuffleArray<T>(array: T[]): T[] {
   const arr = [...array];
@@ -17,7 +16,16 @@ function shuffleArray<T>(array: T[]): T[] {
 
 const DURATION_OPTIONS = [2, 3, 4, 5];
 
-const PLAYER_LABELS = ["الأول", "الثاني", "الثالث", "الرابع", "الخامس"];
+const PLAYER_LABELS = ["الأول", "الثاني", "الثالث", "الرابع", "الخامس", "السادس"];
+
+function getPlayerCountLabel(count: number): string {
+  const labels: Record<number, string> = {
+    4: "الأربعة",
+    5: "الخمسة",
+    6: "الستة",
+  };
+  return labels[count] ?? String(count);
+}
 
 export default function PlayerSetup() {
   const { caseId } = useParams<{ caseId: string }>();
@@ -66,28 +74,40 @@ export default function PlayerSetup() {
     }
 
     const shuffledChars = shuffleArray(caseData.characters);
+    const mafiosoIds = caseData.culpritIds ?? [caseData.culpritId];
 
     const players: Player[] = playerNames.map((name, index) => ({
       id: `player_${index}`,
       name: name.trim(),
-      isMafioso: shuffledChars[index].id === caseData.culpritId,
+      isMafioso: mafiosoIds.includes(shuffledChars[index].id),
       characterId: shuffledChars[index].id,
       characterName: shuffledChars[index].name,
       hasRevealed: false,
       isEliminated: false,
     }));
 
+    if (mafiosoIds.length > 1) {
+      const mafiosoPlayers = players.filter(p => p.isMafioso);
+      players.forEach(p => {
+        if (p.isMafioso) {
+          p.mafiosoPartnerName = mafiosoPlayers.find(m => m.id !== p.id)?.name;
+        }
+      });
+    }
+
     setPlayers(players);
     setRoundDuration(selectedDuration);
     setLocation(`/draw/${caseId}`);
   };
+
+  const playerCountForRoute = caseData.playerCount ?? 4;
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">
       <div className="sticky top-0 z-20 bg-background/90 backdrop-blur-md border-b border-border/50">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
           <button
-            onClick={() => setLocation("/cases")}
+            onClick={() => setLocation(`/cases/${playerCountForRoute}`)}
             className="p-2 rounded-xl hover:bg-white/5 transition-colors text-zinc-400 hover:text-white"
           >
             <ArrowRight className="w-5 h-5" />
@@ -105,7 +125,6 @@ export default function PlayerSetup() {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-8 space-y-8">
-        {/* Case preview */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -134,7 +153,6 @@ export default function PlayerSetup() {
           </div>
         </motion.div>
 
-        {/* Round duration selector */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -169,7 +187,6 @@ export default function PlayerSetup() {
           </p>
         </motion.div>
 
-        {/* Player names */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -179,13 +196,9 @@ export default function PlayerSetup() {
           <div className="flex items-center gap-3 mb-4">
             <div className="flex-1 h-px bg-border" />
             <h2 className="text-sm font-bold text-zinc-400 px-3" style={{ fontFamily: "'Cairo', sans-serif" }}>
-              أسماء اللاعبين {playerCount === 5 ? "الخمسة" : "الأربعة"}
+              أسماء اللاعبين {getPlayerCountLabel(playerCount)}
             </h2>
             <div className="flex-1 h-px bg-border" />
-          </div>
-
-          <div className="flex justify-center py-1">
-            <Mascot pose="pointing_left" height={90} delay={0.15} floatAnimation />
           </div>
 
           {Array.from({ length: playerCount }, (_, index) => (
@@ -229,7 +242,6 @@ export default function PlayerSetup() {
           ))}
         </motion.div>
 
-        {/* Info box */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -241,7 +253,6 @@ export default function PlayerSetup() {
           </p>
         </motion.div>
 
-        {/* Start button */}
         <motion.button
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

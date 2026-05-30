@@ -1,28 +1,26 @@
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
-import Mascot from "@/components/Mascot";
+import { CASES } from "@/data/cases";
+import { CASES_5P, CASES_6P } from "@/data/allCases";
 
 export default function Home() {
   const [, setLocation] = useLocation();
+  const totalCases = CASES.length + CASES_5P.length + CASES_6P.length;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden" dir="rtl">
 
-      {/* Street background image */}
       <div className="absolute inset-0">
         <img
           src="/bg_street_3.webp"
           alt=""
           className="w-full h-full object-cover object-center"
         />
-        {/* Dark overlay layers for readability */}
         <div className="absolute inset-0 bg-black/65" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80" />
-        {/* Red tint overlay */}
         <div className="absolute inset-0 bg-red-950/20" />
       </div>
 
-      {/* Glow accents */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-red-900/15 rounded-full blur-3xl" />
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-80 h-80 bg-red-950/20 rounded-full blur-3xl" />
@@ -37,7 +35,6 @@ export default function Home() {
         transition={{ duration: 0.6 }}
         className="flex flex-col items-center gap-8 z-10 px-6 text-center"
       >
-        {/* Logo */}
         <motion.div
           initial={{ scale: 0.7, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -63,7 +60,6 @@ export default function Home() {
           </div>
         </motion.div>
 
-        {/* Title */}
         <div className="space-y-2">
           <motion.h1
             initial={{ opacity: 0, y: 15 }}
@@ -98,11 +94,10 @@ export default function Home() {
             className="text-zinc-300 text-sm max-w-xs mx-auto leading-relaxed"
             style={{ fontFamily: "'Cairo', sans-serif", textShadow: "0 1px 4px rgba(0,0,0,0.9)" }}
           >
-            لعبة استنتاج اجتماعي. ٤ أو ٥ لاعبين. أبرياء ومجرم واحد مختبئ في وسطكم.
+            لعبة استنتاج اجتماعي. من ٤ لـ ٦ لاعبين. أبرياء ومجرمون مختبئون في وسطكم.
           </motion.p>
         </div>
 
-        {/* Stats */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -110,8 +105,8 @@ export default function Home() {
           className="grid grid-cols-3 gap-3 w-full max-w-xs"
         >
           {[
-            { value: "٦٠", label: "قضية" },
-            { value: "٤-٥", label: "لاعبين" },
+            { value: String(totalCases), label: "قضية" },
+            { value: "٤-٦", label: "لاعبين" },
             { value: "٣", label: "جولات" },
           ].map((stat, i) => (
             <div key={i} className="text-center p-3 rounded-2xl bg-black/40 border border-white/[0.10] backdrop-blur-sm">
@@ -125,7 +120,6 @@ export default function Home() {
           ))}
         </motion.div>
 
-        {/* Start button */}
         <motion.button
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -143,7 +137,6 @@ export default function Home() {
           <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
         </motion.button>
 
-        {/* Hint */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -155,17 +148,6 @@ export default function Home() {
         </motion.p>
       </motion.div>
 
-      {/* Mascot – left side */}
-      <motion.div
-        initial={{ opacity: 0, x: -30 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.8, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="absolute bottom-16 left-0 hidden sm:block"
-      >
-        <Mascot pose="welcome" height={160} delay={0.8} floatAnimation />
-      </motion.div>
-
-      {/* Bullet decorations */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

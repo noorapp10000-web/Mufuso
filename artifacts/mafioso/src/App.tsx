@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
+import PlayerCountSelect from "@/pages/PlayerCountSelect";
 import CaseSelection from "@/pages/CaseSelection";
 import PlayerSetup from "@/pages/PlayerSetup";
 import CardDraw from "@/pages/CardDraw";
@@ -29,7 +30,8 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
-      <Route path="/cases" component={CaseSelection} />
+      <Route path="/cases" component={PlayerCountSelect} />
+      <Route path="/cases/:count" component={CaseSelection} />
       <Route path="/setup/:caseId" component={PlayerSetup} />
       <Route path="/draw/:caseId" component={CardDraw} />
       <Route path="/play/:caseId" component={GamePlay} />

@@ -8,7 +8,7 @@ import {
   ArrowRight, Eye, ChevronDown, ChevronUp,
   Shield, Skull, Timer, Vote, CheckCircle, XCircle, Users
 } from "lucide-react";
-import Mascot from "@/components/Mascot";
+
 
 type Phase =
   | "case_intro"
@@ -244,11 +244,6 @@ export default function GamePlay() {
             </div>
           </motion.div>
 
-          {/* Mascot - Reading */}
-          <div className="flex justify-center -mb-2">
-            <Mascot pose="reading" height={80} delay={0.05} floatAnimation />
-          </div>
-
           {/* Crime */}
           <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
             className="p-5 rounded-2xl bg-card border border-border">
@@ -356,9 +351,6 @@ export default function GamePlay() {
         <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
           {/* Round header */}
           <div className="text-center space-y-1">
-            <div className="flex justify-center mb-2">
-              <Mascot pose="thinking" height={72} delay={0} floatAnimation />
-            </div>
             <h2 className="text-2xl font-black text-white" style={{ fontFamily: "'Cairo', sans-serif" }}>
               {isLastRound ? "الجولة الأخيرة" : `الجولة ${ROUND_LABELS[currentRound - 1] ?? currentRound}`}
             </h2>
@@ -469,11 +461,6 @@ export default function GamePlay() {
         </div>
 
         <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-          {/* Mascot - Warning */}
-          <div className="flex justify-center">
-            <Mascot pose="warning" height={72} delay={0} floatAnimation />
-          </div>
-
           {isFinalRound && (
             <div className="p-3 rounded-xl bg-amber-950/20 border border-amber-900/30 text-center">
               <p className="text-xs text-amber-400 font-bold" style={{ fontFamily: "'Cairo', sans-serif" }}>
@@ -825,14 +812,6 @@ function GameOverScreen({
               ? "bg-gradient-to-br from-green-950/50 to-zinc-900 border-green-700/50"
               : "bg-gradient-to-br from-red-950/50 to-zinc-900 border-red-700/50"
           }`}>
-          <div className="flex justify-center mb-3">
-            <Mascot
-              pose={winner === "innocents" ? "thumbs_up" : "warning"}
-              height={110}
-              delay={0.1}
-              floatAnimation
-            />
-          </div>
           <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ${
             winner === "innocents" ? "bg-green-900/50 border-2 border-green-700" : "bg-red-900/50 border-2 border-red-700"
           }`}>
