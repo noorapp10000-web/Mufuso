@@ -450,6 +450,66 @@ uri = "file://artifacts/mafioso/public/case-images/case6p_10.png"
 type = "image"
 title = "generated_image"
 
+[[generated]]
+id = "1Q6EmRwZBf23MYL-XYHem"
+uri = "file://artifacts/mafioso/public/case-images/case6p_11.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "Uob5WyRpZNmJchuI0iAiM"
+uri = "file://artifacts/mafioso/public/case-images/case6p_12.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "uzcJ-aztFJLDRBsvDUiqu"
+uri = "file://artifacts/mafioso/public/case-images/case6p_13.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "XWKLlI4VLtyYsqL4hGsAP"
+uri = "file://artifacts/mafioso/public/case-images/case6p_14.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "z4WZ-HvDxAuitZkS5h6Hn"
+uri = "file://artifacts/mafioso/public/case-images/case6p_15.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "No-hXc96_NRwITOHXC8a4"
+uri = "file://artifacts/mafioso/public/case-images/case6p_16.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "9QO0HJrB9n5BuCX8nAQCW"
+uri = "file://artifacts/mafioso/public/case-images/case6p_17.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "AZCp2N-IVCZsJ3fAKG1nl"
+uri = "file://artifacts/mafioso/public/case-images/case6p_18.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "lT8Hp8xHqgF_jy7OdzXth"
+uri = "file://artifacts/mafioso/public/case-images/case6p_19.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "-Zmb76JXlLI1UjpERJRWS"
+uri = "file://artifacts/mafioso/public/case-images/case6p_20.png"
+type = "image"
+title = "generated_image"
+
 [[outputs]]
 id = "VbYA6GJrIiE0kDruUmuuW"
 uri = "file://artifacts/mafioso/public/bg_street_1.png"
