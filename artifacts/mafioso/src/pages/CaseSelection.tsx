@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CASES } from "@/data/cases";
 import { CASES_5P, CASES_6P } from "@/data/allCases";
 import { ArrowRight, MapPin, AlertCircle, Users, Shuffle, X } from "lucide-react";
+import Mascot from "@/components/Mascot";
 
 const categoryColors: Record<string, string> = {
   "جريمة قتل":     "text-red-400 bg-red-950/40 border-red-900/40",
@@ -174,6 +175,8 @@ export default function CaseSelection() {
                 {totalCases} قضية متاحة
               </p>
             </div>
+
+            <Mascot pose="presenting" height={56} delay={0.1} floatAnimation={false} />
 
             {/* Random button */}
             <motion.button

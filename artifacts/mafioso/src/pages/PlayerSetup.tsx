@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { getCaseById as getCase } from "@/data/allCases";
 import { useGame, Player } from "@/context/GameContext";
 import { ArrowRight, User, MapPin, Clock } from "lucide-react";
+import Mascot from "@/components/Mascot";
 
 function shuffleArray<T>(array: T[]): T[] {
   const arr = [...array];
@@ -181,6 +182,10 @@ export default function PlayerSetup() {
               أسماء اللاعبين {playerCount === 5 ? "الخمسة" : "الأربعة"}
             </h2>
             <div className="flex-1 h-px bg-border" />
+          </div>
+
+          <div className="flex justify-center py-1">
+            <Mascot pose="pointing_left" height={90} delay={0.15} floatAnimation />
           </div>
 
           {Array.from({ length: playerCount }, (_, index) => (

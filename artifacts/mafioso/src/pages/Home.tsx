@@ -1,5 +1,6 @@
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
+import Mascot from "@/components/Mascot";
 
 export default function Home() {
   const [, setLocation] = useLocation();
@@ -152,6 +153,16 @@ export default function Home() {
         >
           اختر قضية · ادخل الأسماء · اكشف المافيوسو
         </motion.p>
+      </motion.div>
+
+      {/* Mascot – left side */}
+      <motion.div
+        initial={{ opacity: 0, x: -30 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.8, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="absolute bottom-16 left-0 hidden sm:block"
+      >
+        <Mascot pose="welcome" height={160} delay={0.8} floatAnimation />
       </motion.div>
 
       {/* Bullet decorations */}
