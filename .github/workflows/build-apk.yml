@@ -40,17 +40,63 @@ jobs:
         working-directory: artifacts/mafioso
         run: npx cap add android
 
+      - name: Sync Capacitor
+        working-directory: artifacts/mafioso
+        run: npx cap sync android
+
+      # Permissions added AFTER cap sync so they are never overwritten
       - name: Add microphone permissions to AndroidManifest
         working-directory: artifacts/mafioso
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
-          if ! grep -q "RECORD_AUDIO" "$MANIFEST"; then
-            sed -i 's|<uses-permission android:name="android.permission.INTERNET"|<uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />\n    <uses-permission android:name="android.permission.INTERNET"|' "$MANIFEST"
-          fi
+          for PERM in \
+            "android.permission.RECORD_AUDIO" \
+            "android.permission.MODIFY_AUDIO_SETTINGS"; do
+            if ! grep -q "$PERM" "$MANIFEST"; then
+              sed -i "s|<uses-permission android:name=\"android.permission.INTERNET\"|<uses-permission android:name=\"$PERM\" />\n    <uses-permission android:name=\"android.permission.INTERNET\"|" "$MANIFEST"
+              echo "✓ Added $PERM"
+            else
+              echo "✓ Already present: $PERM"
+            fi
+          done
+          grep "uses-permission" "$MANIFEST"
 
-      - name: Sync Capacitor
+      # Patch MainActivity to request microphone permission at runtime (Android 6+)
+      - name: Patch MainActivity for microphone runtime permission
         working-directory: artifacts/mafioso
-        run: npx cap sync android
+        run: |
+          MAIN="android/app/src/main/java/com/mafioso/game/MainActivity.java"
+          cat > "$MAIN" << 'JAVA'
+package com.mafioso.game;
+
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
+import android.webkit.PermissionRequest;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import com.getcapacitor.BridgeActivity;
+
+public class MainActivity extends BridgeActivity {
+    private static final int MIC_PERMISSION_CODE = 100;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // Request microphone permission at runtime (required Android 6+)
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                new String[]{
+                    Manifest.permission.RECORD_AUDIO,
+                    Manifest.permission.MODIFY_AUDIO_SETTINGS
+                },
+                MIC_PERMISSION_CODE);
+        }
+    }
+}
+JAVA
+          echo "✓ MainActivity patched for runtime microphone permission"
 
       - name: Build Debug APK
         working-directory: artifacts/mafioso/android
