@@ -40,6 +40,34 @@ jobs:
         working-directory: artifacts/mafioso
         run: npx cap add android
 
+      - name: Apply custom splash screen & colors
+        run: |
+          RES=artifacts/mafioso/android/app/src/main/res
+          SRC=artifacts/mafioso/android-assets/res
+
+          # Copy splash PNGs for all densities
+          for dir in drawable drawable-land-hdpi drawable-land-mdpi drawable-land-xhdpi \
+                     drawable-land-xxhdpi drawable-land-xxxhdpi \
+                     drawable-port-hdpi drawable-port-mdpi drawable-port-xhdpi \
+                     drawable-port-xxhdpi drawable-port-xxxhdpi drawable-v21; do
+            mkdir -p "$RES/$dir"
+            [ -f "$SRC/$dir/splash.png" ] && cp "$SRC/$dir/splash.png" "$RES/$dir/splash.png"
+            [ -f "$SRC/$dir/splash.xml" ] && cp "$SRC/$dir/splash.xml" "$RES/$dir/splash.xml"
+          done
+
+          # Copy ic_splash_logo and fallback splash
+          cp "$SRC/drawable/ic_splash_logo.png" "$RES/drawable/ic_splash_logo.png"
+          cp "$SRC/drawable/splash.png" "$RES/drawable/splash.png"
+
+          # Merge colors into existing colors.xml
+          if [ -f "$RES/values/colors.xml" ]; then
+            sed -i 's|</resources>||' "$RES/values/colors.xml"
+            echo '    <color name="splashBackground">#CC0000</color>' >> "$RES/values/colors.xml"
+            echo '</resources>' >> "$RES/values/colors.xml"
+          else
+            cp "$SRC/values/colors.xml" "$RES/values/colors.xml"
+          fi
+
       - name: Sync Capacitor
         working-directory: artifacts/mafioso
         run: npx cap sync android
