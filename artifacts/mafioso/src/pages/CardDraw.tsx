@@ -131,7 +131,7 @@ export default function CardDraw() {
             </div>
 
             {/* Card */}
-            <div className="flip-card w-full mx-auto" style={{ height: "520px" }}>
+            <div className="flip-card w-full mx-auto" style={{ height: "min(520px, calc(100svh - 220px))" }}>
               <div className={`flip-card-inner w-full h-full ${cardFlipped ? "flipped" : ""}`}>
                 {/* Card Back */}
                 <div
@@ -192,7 +192,7 @@ export default function CardDraw() {
 
                     {/* Character info */}
                     {character && (
-                      <div className="flex-1 p-6 space-y-4">
+                      <div className="flex-1 p-6 space-y-4 overflow-y-auto">
                         <div>
                           <p className="text-xs text-zinc-500 mb-1">شخصيتك</p>
                           <h3 className="text-xl font-black text-white" style={{ fontFamily: "'Cairo', sans-serif" }}>
