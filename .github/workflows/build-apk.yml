@@ -1,0 +1,57 @@
+name: Build APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build web assets
+        env:
+          VITE_API_URL: https://seifoooo-mafioso-server.hf.space
+        run: pnpm --filter @workspace/mafioso run build:apk
+
+      - name: Add Android platform
+        working-directory: artifacts/mafioso
+        run: npx cap add android
+
+      - name: Sync Capacitor
+        working-directory: artifacts/mafioso
+        run: npx cap sync android
+
+      - name: Build Debug APK
+        working-directory: artifacts/mafioso/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+        env:
+          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: mafioso-debug
+          path: artifacts/mafioso/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
