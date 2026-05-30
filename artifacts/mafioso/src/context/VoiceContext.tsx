@@ -11,9 +11,8 @@ const ICE_SERVERS: RTCIceServer[] = [
   { urls: "stun:global.stun.twilio.com:3478" },
 ];
 
-// Full-duplex constraints:
-// - echoCancellation: false → disables hardware AEC on Android which forces half-duplex
-// - noiseSuppression / autoGainControl kept on for comfort
+// echoCancellation: false → disables Android hardware AEC that forces half-duplex
+// noiseSuppression + autoGainControl stay on for voice quality
 const AUDIO_CONSTRAINTS: MediaStreamConstraints = {
   audio: {
     echoCancellation: false,
@@ -30,6 +29,7 @@ const AUDIO_CONSTRAINTS: MediaStreamConstraints = {
 
 interface PeerState {
   pc: RTCPeerConnection;
+  audio: HTMLAudioElement;
   makingOffer: boolean;
 }
 
@@ -66,29 +66,17 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
   const isMutedRef     = useRef(false);
   const initDoneRef    = useRef(false);
 
-  // Shared AudioContext — routes all remote audio through MUSIC stream (not COMMUNICATION)
-  // This is the key to full-duplex on Android: MUSIC mode doesn't enforce half-duplex AEC
-  const audioCtxRef = useRef<AudioContext | null>(null);
-
   // Per-peer ICE queue — buffers candidates arriving before setRemoteDescription
   const iceQueueRef = useRef<Map<string, RTCIceCandidateInit[]>>(new Map());
 
-  // ── Get or create AudioContext (must be after user gesture on mobile) ────────
-  function getAudioCtx(): AudioContext {
-    if (!audioCtxRef.current || audioCtxRef.current.state === "closed") {
-      // @ts-ignore — sinkId / latencyHint for music mode
-      audioCtxRef.current = new AudioContext({ latencyHint: "interactive" });
-    }
-    if (audioCtxRef.current.state === "suspended") {
-      audioCtxRef.current.resume().catch(() => {});
-    }
-    return audioCtxRef.current;
-  }
+  // Pending audio elements that couldn't autoplay — unlocked on next user touch
+  const pendingPlayRef = useRef<HTMLAudioElement[]>([]);
 
-  // ── Unlock AudioContext on first user gesture ────────────────────────────────
+  // ── Unlock audio on first user gesture (needed on Android WebView) ──────────
   useEffect(() => {
     function unlock() {
-      getAudioCtx();
+      pendingPlayRef.current.forEach(a => a.play().catch(() => {}));
+      pendingPlayRef.current = [];
     }
     document.addEventListener("click",      unlock, { once: true });
     document.addEventListener("touchstart", unlock, { once: true });
@@ -98,7 +86,15 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // ── Drain queued ICE candidates for a peer ───────────────────────────────────
+  // ── Helper: try to play audio, queue if blocked ───────────────────────────
+  function tryPlay(audio: HTMLAudioElement) {
+    const p = audio.play();
+    if (p !== undefined) {
+      p.catch(() => { pendingPlayRef.current.push(audio); });
+    }
+  }
+
+  // ── Drain queued ICE candidates for a peer ───────────────────────────────
   async function drainIceQueue(fromPlayerId: string, pc: RTCPeerConnection) {
     const queued = iceQueueRef.current.get(fromPlayerId) ?? [];
     iceQueueRef.current.set(fromPlayerId, []);
@@ -107,7 +103,7 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  // ── Build an RTCPeerConnection for a remote player ────────────────────────────
+  // ── Build an RTCPeerConnection for a remote player ────────────────────────
   const buildPeer = useCallback((targetPlayerId: string): PeerState => {
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
 
@@ -116,20 +112,17 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
       pc.addTrack(t, localStreamRef.current!);
     });
 
-    // Route remote audio through AudioContext (MUSIC mode) for full-duplex
+    // Remote audio element
+    const audio = new Audio();
+    audio.autoplay  = true;
+    audio.volume    = 1.0;
+    audio.muted     = false;
+    audio.setAttribute("playsinline", "");
+
     pc.ontrack = ev => {
-      try {
-        const ctx = getAudioCtx();
-        const source = ctx.createMediaStreamSource(ev.streams[0]);
-        source.connect(ctx.destination);
-      } catch (err) {
-        // Fallback to HTMLAudioElement if AudioContext fails
-        console.warn("[Voice] AudioContext failed, falling back:", err);
-        const audio = new Audio();
-        audio.autoplay = true;
-        audio.setAttribute("playsinline", "");
+      if (audio.srcObject !== ev.streams[0]) {
         audio.srcObject = ev.streams[0];
-        audio.play().catch(() => {});
+        tryPlay(audio);
       }
     };
 
@@ -150,10 +143,10 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    return { pc, makingOffer: false };
+    return { pc, audio, makingOffer: false };
   }, [socketRef]);
 
-  // ── Init microphone when entering a room ─────────────────────────────────────
+  // ── Init microphone when entering a room ──────────────────────────────────
   useEffect(() => {
     if (!room || !myPlayerId || initDoneRef.current) return;
     initDoneRef.current = true;
@@ -177,16 +170,15 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
     return () => { cancelled = true; };
   }, [!!room, myPlayerId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Cleanup when leaving room ─────────────────────────────────────────────────
+  // ── Cleanup when leaving room ─────────────────────────────────────────────
   useEffect(() => {
     if (room) return;
     localStreamRef.current?.getTracks().forEach(t => t.stop());
     localStreamRef.current = null;
-    peersRef.current.forEach(({ pc }) => { pc.close(); });
+    peersRef.current.forEach(({ pc, audio }) => { pc.close(); audio.srcObject = null; });
     peersRef.current.clear();
     iceQueueRef.current.clear();
-    audioCtxRef.current?.close().catch(() => {});
-    audioCtxRef.current = null;
+    pendingPlayRef.current = [];
     initDoneRef.current = false;
     setIsVoiceReady(false);
     setMutedPlayers(new Set());
@@ -194,7 +186,7 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
     isMutedRef.current = false;
   }, [room]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Manage peer mesh when players join / leave ────────────────────────────────
+  // ── Manage peer mesh when players join / leave ────────────────────────────
   useEffect(() => {
     const socket = socketRef.current;
     if (!socket || !room || !myPlayerId || !isVoiceReady) return;
@@ -203,9 +195,10 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
     const activeIds     = new Set(activePlayers.map(p => p.id));
 
     // Remove departed peers
-    for (const [pid, { pc }] of peersRef.current) {
+    for (const [pid, { pc, audio }] of peersRef.current) {
       if (!activeIds.has(pid)) {
         pc.close();
+        audio.srcObject = null;
         peersRef.current.delete(pid);
         iceQueueRef.current.delete(pid);
       }
@@ -241,7 +234,7 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
     }
   }, [room?.players, isVoiceReady, myPlayerId, socketRef, buildPeer]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Handle incoming signals + mute events ────────────────────────────────────
+  // ── Handle incoming signals + mute events ─────────────────────────────────
   useEffect(() => {
     const socket = socketRef.current;
     if (!socket || !myPlayerId) return;
@@ -315,7 +308,7 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
     };
   }, [connected, myPlayerId, socketRef, buildPeer]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Toggle mute ───────────────────────────────────────────────────────────────
+  // ── Toggle mute ───────────────────────────────────────────────────────────
   const toggleMute = useCallback(() => {
     const stream = localStreamRef.current;
     if (!stream) return;
