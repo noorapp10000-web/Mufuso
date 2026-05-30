@@ -593,3 +593,51 @@ id = "uzp4m2x8xLIWZgHkrsAj-"
 uri = "file://artifacts/mafioso/public/bg_street_4.png"
 type = "image"
 title = "خيار ٤ — شارع إسلامي قديم بضباب أحمر"
+
+[[outputs]]
+id = "JqU-5xCAsBkEhCErE9hpE"
+uri = "file://artifacts/mafioso/public/mascot/mascot_pointing_right.webp"
+type = "image"
+title = "Pointing Right"
+
+[[outputs]]
+id = "0apZTRaROs7vbwBDpCB4C"
+uri = "file://artifacts/mafioso/public/mascot/mascot_pointing_left.webp"
+type = "image"
+title = "Pointing Left"
+
+[[outputs]]
+id = "I5t0UOk1yMF5Ia-o_n94r"
+uri = "file://artifacts/mafioso/public/mascot/mascot_welcome.webp"
+type = "image"
+title = "Welcome"
+
+[[outputs]]
+id = "gQoAutGjcs0BKA3l5ga_f"
+uri = "file://artifacts/mafioso/public/mascot/mascot_reading.webp"
+type = "image"
+title = "Reading / Explaining"
+
+[[outputs]]
+id = "mNFl8yctGtgw91TsIzJnz"
+uri = "file://artifacts/mafioso/public/mascot/mascot_thumbs_up.webp"
+type = "image"
+title = "Thumbs Up"
+
+[[outputs]]
+id = "VCJOo5dXxOTlLOPtdcUpc"
+uri = "file://artifacts/mafioso/public/mascot/mascot_thinking.webp"
+type = "image"
+title = "Thinking"
+
+[[outputs]]
+id = "_48s7_xt4z-jKDINICyWQ"
+uri = "file://artifacts/mafioso/public/mascot/mascot_presenting.webp"
+type = "image"
+title = "Presenting"
+
+[[outputs]]
+id = "wyRpyQvgsWVqMrYDoWqwm"
+uri = "file://artifacts/mafioso/public/mascot/mascot_warning.webp"
+type = "image"
+title = "Warning / Attention"
