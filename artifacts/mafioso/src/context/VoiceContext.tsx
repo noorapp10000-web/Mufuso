@@ -11,12 +11,15 @@ const ICE_SERVERS: RTCIceServer[] = [
   { urls: "stun:global.stun.twilio.com:3478" },
 ];
 
+// Full-duplex constraints:
+// - echoCancellation: false → disables hardware AEC on Android which forces half-duplex
+// - noiseSuppression / autoGainControl kept on for comfort
 const AUDIO_CONSTRAINTS: MediaStreamConstraints = {
   audio: {
-    echoCancellation: true,
+    echoCancellation: false,
     noiseSuppression: true,
     autoGainControl: true,
-    // @ts-ignore — sampleRate not in all type defs but works in modern browsers
+    // @ts-ignore
     sampleRate: 48000,
     channelCount: 1,
   },
@@ -27,7 +30,6 @@ const AUDIO_CONSTRAINTS: MediaStreamConstraints = {
 
 interface PeerState {
   pc: RTCPeerConnection;
-  audio: HTMLAudioElement;
   makingOffer: boolean;
 }
 
@@ -64,17 +66,29 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
   const isMutedRef     = useRef(false);
   const initDoneRef    = useRef(false);
 
+  // Shared AudioContext — routes all remote audio through MUSIC stream (not COMMUNICATION)
+  // This is the key to full-duplex on Android: MUSIC mode doesn't enforce half-duplex AEC
+  const audioCtxRef = useRef<AudioContext | null>(null);
+
   // Per-peer ICE queue — buffers candidates arriving before setRemoteDescription
   const iceQueueRef = useRef<Map<string, RTCIceCandidateInit[]>>(new Map());
 
-  // Pending audio elements that couldn't autoplay — unlocked on next user touch
-  const pendingPlayRef = useRef<HTMLAudioElement[]>([]);
+  // ── Get or create AudioContext (must be after user gesture on mobile) ────────
+  function getAudioCtx(): AudioContext {
+    if (!audioCtxRef.current || audioCtxRef.current.state === "closed") {
+      // @ts-ignore — sinkId / latencyHint for music mode
+      audioCtxRef.current = new AudioContext({ latencyHint: "interactive" });
+    }
+    if (audioCtxRef.current.state === "suspended") {
+      audioCtxRef.current.resume().catch(() => {});
+    }
+    return audioCtxRef.current;
+  }
 
-  // ── Unlock audio on first user gesture (needed on Android WebView) ──────────
+  // ── Unlock AudioContext on first user gesture ────────────────────────────────
   useEffect(() => {
     function unlock() {
-      pendingPlayRef.current.forEach(a => a.play().catch(() => {}));
-      pendingPlayRef.current = [];
+      getAudioCtx();
     }
     document.addEventListener("click",      unlock, { once: true });
     document.addEventListener("touchstart", unlock, { once: true });
@@ -84,15 +98,7 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // ── Helper: try to play audio, queue if blocked ───────────────────────────
-  function tryPlay(audio: HTMLAudioElement) {
-    const p = audio.play();
-    if (p !== undefined) {
-      p.catch(() => { pendingPlayRef.current.push(audio); });
-    }
-  }
-
-  // ── Drain queued ICE candidates for a peer ───────────────────────────────
+  // ── Drain queued ICE candidates for a peer ───────────────────────────────────
   async function drainIceQueue(fromPlayerId: string, pc: RTCPeerConnection) {
     const queued = iceQueueRef.current.get(fromPlayerId) ?? [];
     iceQueueRef.current.set(fromPlayerId, []);
@@ -101,7 +107,7 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  // ── Build an RTCPeerConnection for a remote player ────────────────────────
+  // ── Build an RTCPeerConnection for a remote player ────────────────────────────
   const buildPeer = useCallback((targetPlayerId: string): PeerState => {
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
 
@@ -110,15 +116,20 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
       pc.addTrack(t, localStreamRef.current!);
     });
 
-    // Remote audio
-    const audio = new Audio();
-    audio.autoplay = true;
-    audio.setAttribute("playsinline", ""); // Capacitor WebView — no fullscreen on iOS
-
+    // Route remote audio through AudioContext (MUSIC mode) for full-duplex
     pc.ontrack = ev => {
-      if (audio.srcObject !== ev.streams[0]) {
+      try {
+        const ctx = getAudioCtx();
+        const source = ctx.createMediaStreamSource(ev.streams[0]);
+        source.connect(ctx.destination);
+      } catch (err) {
+        // Fallback to HTMLAudioElement if AudioContext fails
+        console.warn("[Voice] AudioContext failed, falling back:", err);
+        const audio = new Audio();
+        audio.autoplay = true;
+        audio.setAttribute("playsinline", "");
         audio.srcObject = ev.streams[0];
-        tryPlay(audio);
+        audio.play().catch(() => {});
       }
     };
 
@@ -132,7 +143,6 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    // Log state changes for debugging
     pc.oniceconnectionstatechange = () => {
       console.info(`[Voice] ICE ${targetPlayerId} →`, pc.iceConnectionState);
       if (pc.iceConnectionState === "failed") {
@@ -140,10 +150,10 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    return { pc, audio, makingOffer: false };
+    return { pc, makingOffer: false };
   }, [socketRef]);
 
-  // ── Init microphone when entering a room ──────────────────────────────────
+  // ── Init microphone when entering a room ─────────────────────────────────────
   useEffect(() => {
     if (!room || !myPlayerId || initDoneRef.current) return;
     initDoneRef.current = true;
@@ -153,7 +163,6 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
     navigator.mediaDevices.getUserMedia(AUDIO_CONSTRAINTS)
       .then(stream => {
         if (cancelled) { stream.getTracks().forEach(t => t.stop()); return; }
-        // Start muted-off (enabled)
         stream.getAudioTracks().forEach(t => { t.enabled = true; });
         localStreamRef.current = stream;
         setIsVoiceReady(true);
@@ -168,15 +177,16 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
     return () => { cancelled = true; };
   }, [!!room, myPlayerId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Cleanup when leaving room ─────────────────────────────────────────────
+  // ── Cleanup when leaving room ─────────────────────────────────────────────────
   useEffect(() => {
     if (room) return;
     localStreamRef.current?.getTracks().forEach(t => t.stop());
     localStreamRef.current = null;
-    peersRef.current.forEach(({ pc, audio }) => { pc.close(); audio.srcObject = null; });
+    peersRef.current.forEach(({ pc }) => { pc.close(); });
     peersRef.current.clear();
     iceQueueRef.current.clear();
-    pendingPlayRef.current = [];
+    audioCtxRef.current?.close().catch(() => {});
+    audioCtxRef.current = null;
     initDoneRef.current = false;
     setIsVoiceReady(false);
     setMutedPlayers(new Set());
@@ -184,7 +194,7 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
     isMutedRef.current = false;
   }, [room]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Manage peer mesh when players join / leave ────────────────────────────
+  // ── Manage peer mesh when players join / leave ────────────────────────────────
   useEffect(() => {
     const socket = socketRef.current;
     if (!socket || !room || !myPlayerId || !isVoiceReady) return;
@@ -193,10 +203,9 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
     const activeIds     = new Set(activePlayers.map(p => p.id));
 
     // Remove departed peers
-    for (const [pid, { pc, audio }] of peersRef.current) {
+    for (const [pid, { pc }] of peersRef.current) {
       if (!activeIds.has(pid)) {
         pc.close();
-        audio.srcObject = null;
         peersRef.current.delete(pid);
         iceQueueRef.current.delete(pid);
       }
@@ -210,7 +219,7 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
       peersRef.current.set(player.id, peer);
       iceQueueRef.current.set(player.id, []);
 
-      // Tie-break: polite = higher ID waits; impolite = lower ID sends offer
+      // Tie-break: lower ID sends offer
       const imPolite = myPlayerId < player.id;
       if (imPolite) {
         peer.makingOffer = true;
@@ -232,7 +241,7 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
     }
   }, [room?.players, isVoiceReady, myPlayerId, socketRef, buildPeer]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Handle incoming signals + mute events ─────────────────────────────────
+  // ── Handle incoming signals + mute events ────────────────────────────────────
   useEffect(() => {
     const socket = socketRef.current;
     if (!socket || !myPlayerId) return;
@@ -245,7 +254,6 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
         candidate?: RTCIceCandidateInit;
       };
     }) {
-      // Lazily create peer if we receive an offer before managing it ourselves
       if (!peersRef.current.has(fromPlayerId)) {
         peersRef.current.set(fromPlayerId, buildPeer(fromPlayerId));
         iceQueueRef.current.set(fromPlayerId, []);
@@ -254,13 +262,12 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
 
       try {
         if (signal.type === "offer" && signal.sdp) {
-          // Polite peer: always accept offer, rollback if needed
           const offerCollision =
             peersRef.current.get(fromPlayerId)!.makingOffer ||
             pc.signalingState !== "stable";
 
           const imPolite = (myPlayerId ?? "") > fromPlayerId;
-          if (!imPolite && offerCollision) return; // impolite ignores colliding offer
+          if (!imPolite && offerCollision) return;
 
           await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
           await drainIceQueue(fromPlayerId, pc);
@@ -282,7 +289,6 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
           if (pc.remoteDescription) {
             await pc.addIceCandidate(new RTCIceCandidate(signal.candidate));
           } else {
-            // Buffer — remote description not set yet
             const q = iceQueueRef.current.get(fromPlayerId) ?? [];
             q.push(signal.candidate);
             iceQueueRef.current.set(fromPlayerId, q);
@@ -309,7 +315,7 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
     };
   }, [connected, myPlayerId, socketRef, buildPeer]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Toggle mute ───────────────────────────────────────────────────────────
+  // ── Toggle mute ───────────────────────────────────────────────────────────────
   const toggleMute = useCallback(() => {
     const stream = localStreamRef.current;
     if (!stream) return;
