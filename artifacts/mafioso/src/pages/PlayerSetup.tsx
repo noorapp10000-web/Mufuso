@@ -183,7 +183,7 @@ export default function PlayerSetup() {
             ))}
           </div>
           <p className="text-xs text-zinc-600 text-center">
-            المدة المختارة: {selectedDuration} دقائق لكل جولة من الجولات الـ٣
+            المدة المختارة: {selectedDuration} دقائق لكل جولة من الجولات الـ{playerCount === 6 ? "٥" : playerCount === 5 ? "٤" : "٣"}
           </p>
         </motion.div>
 
@@ -249,7 +249,11 @@ export default function PlayerSetup() {
           className="p-4 rounded-2xl bg-amber-950/20 border border-amber-900/30"
         >
           <p className="text-sm text-amber-400/80 leading-relaxed text-center" style={{ fontFamily: "'Cairo', sans-serif" }}>
-            سيختار النظام المافيوسو عشوائياً. كل قضية فيها ٣ جولات — جولة = دليل جديد + نقاش + تصويت لطرد مشتبه. عدد اللاعبين لا يغير عدد الجولات.
+            سيختار النظام المافيوسو عشوائياً. كل قضية فيها{" "}
+            <span className="font-black text-amber-300">
+              {playerCount === 6 ? "٥" : playerCount === 5 ? "٤" : "٣"}
+            </span>{" "}
+            جولات — جولة = دليل جديد + نقاش + تصويت لطرد مشتبه.
           </p>
         </motion.div>
 

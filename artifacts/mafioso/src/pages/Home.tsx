@@ -165,26 +165,36 @@ export default function Home() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.1, duration: 0.8 }}
-        className="absolute bottom-20 left-0 right-0 flex justify-center gap-3"
+        className="absolute bottom-32 left-0 right-0 flex justify-center gap-3"
       >
         {[...Array(5)].map((_, i) => (
           <div key={i} className="w-1.5 h-1.5 rounded-full bg-red-700/50" />
         ))}
       </motion.div>
 
-      {/* Footer */}
+      {/* Credits box */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.2, duration: 0.8 }}
-        className="absolute bottom-5 left-0 right-0 flex flex-col items-center gap-1 px-4"
+        className="absolute bottom-4 left-4 right-4 max-h-24 overflow-y-auto"
+        style={{ WebkitOverflowScrolling: "touch" }}
       >
-        <p className="text-zinc-500 text-xs" style={{ fontFamily: "'Cairo', sans-serif" }}>
-          تصميم وتطوير سيف كامل
-        </p>
-        <p className="text-zinc-600 text-xs text-center leading-relaxed" style={{ fontFamily: "'Cairo', sans-serif" }}>
-          صدقة جارية على روح جدي وجدتي رحمهما الله
-        </p>
+        <div
+          className="rounded-2xl border border-red-900/30 bg-black/50 backdrop-blur-sm px-4 py-3 text-center space-y-1"
+          style={{ boxShadow: "0 0 20px rgba(120,0,0,0.2)" }}
+        >
+          <p className="text-zinc-400 text-xs font-semibold" style={{ fontFamily: "'Cairo', sans-serif" }}>
+            تصميم وتطوير
+          </p>
+          <p className="text-red-400 text-sm font-black" style={{ fontFamily: "'Cairo', sans-serif" }}>
+            سيف كامل
+          </p>
+          <div className="w-12 h-px bg-red-900/50 mx-auto" />
+          <p className="text-zinc-500 text-xs leading-relaxed" style={{ fontFamily: "'Cairo', sans-serif" }}>
+            صدقة جارية على روح جدي وجدتي رحمهما الله
+          </p>
+        </div>
       </motion.div>
     </div>
   );

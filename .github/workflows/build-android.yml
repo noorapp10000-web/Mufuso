@@ -19,9 +19,6 @@ jobs:
         uses: actions/checkout@v4
 
       # ─── 2. Java JDK ─────────────────────────────────────────────────────────
-      # NOTE: cache:gradle is intentionally OMITTED here because the android/
-      # directory does not exist yet — it is created by "cap add android" later.
-      # Gradle caching is handled by the dedicated step below.
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -74,31 +71,39 @@ jobs:
           ls android/ | head -10
           test -d android/app || (echo "ERROR: android/app not found" && exit 1)
 
-      # ─── 8. App icons via ImageMagick ─────────────────────────────────────────
+      # ─── 8. Capacitor sync (MUST happen before icons/splash) ──────────────────
+      - name: Sync Capacitor plugins to Android
+        working-directory: artifacts/mafioso
+        run: |
+          echo "=== Syncing Capacitor ==="
+          pnpm exec cap sync android 2>&1
+          echo "=== Sync complete ==="
+
+      # ─── 9. ImageMagick ───────────────────────────────────────────────────────
       - name: Install ImageMagick
         run: sudo apt-get install -y imagemagick
 
-      - name: Generate app icons
+      # ─── 10. Icons + Splash (AFTER cap sync — sync overwrites drawables) ───────
+      - name: Generate icons and splash screen
         working-directory: artifacts/mafioso
         run: |
-          echo "=== Generating launcher icons with ImageMagick ==="
+          echo "=== Generating icons & splash with ImageMagick ==="
           ICON_SRC="resources/icon.png"
           RES="android/app/src/main/res"
 
-          # Verify source icon exists
           if [ ! -f "$ICON_SRC" ]; then
             echo "ERROR: Icon not found at $ICON_SRC"
             exit 1
           fi
           echo "Icon size: $(identify -format '%wx%h' $ICON_SRC)"
 
-          # Remove ALL default Capacitor/Android XML icon files that override our PNGs
+          # ── Remove all default XML icon overrides from cap sync ──────────────
           find "${RES}" -name "ic_launcher*.xml" -delete
           find "${RES}" -name "ic_launcher_foreground.xml" -delete
           find "${RES}" -name "ic_launcher_background.xml" -delete
           echo "  ✓ Removed default XML icon overrides"
 
-          # Generate icons for each density (force exact square dimensions)
+          # ── Launcher icons per density ───────────────────────────────────────
           generate_icon() {
             local DIR=$1 SIZE=$2
             mkdir -p "${RES}/${DIR}"
@@ -113,14 +118,14 @@ jobs:
           generate_icon mipmap-xxhdpi  144
           generate_icon mipmap-xxxhdpi 192
 
-          # Foreground icon for adaptive icons
+          # ── Adaptive icon foreground (logo on dark bg, 432px centered in 512px) ─
           mkdir -p "${RES}/drawable" "${RES}/mipmap-anydpi-v26"
           convert "$ICON_SRC" -resize 432x432^ -gravity center -extent 432x432 \
             -background '#0d0d0d' -gravity center -extent 512x512 \
             "${RES}/drawable/ic_launcher_foreground.png"
           echo "  ✓ drawable/ic_launcher_foreground.png"
 
-          # Adaptive icon XMLs (no heredoc indentation issues — written via printf)
+          # ── Adaptive icon XMLs ───────────────────────────────────────────────
           printf '%s\n' \
             '<?xml version="1.0" encoding="utf-8"?>' \
             '<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">' \
@@ -128,12 +133,11 @@ jobs:
             '    <foreground android:drawable="@drawable/ic_launcher_foreground"/>' \
             '</adaptive-icon>' \
             > "${RES}/mipmap-anydpi-v26/ic_launcher.xml"
-
           cp "${RES}/mipmap-anydpi-v26/ic_launcher.xml" \
              "${RES}/mipmap-anydpi-v26/ic_launcher_round.xml"
           echo "  ✓ adaptive icon XMLs"
 
-          # Background color resource (always write to a dedicated file)
+          # ── Background color for launcher icon ───────────────────────────────
           mkdir -p "${RES}/values"
           printf '%s\n' \
             '<?xml version="1.0" encoding="utf-8"?>' \
@@ -143,62 +147,55 @@ jobs:
             > "${RES}/values/ic_launcher_background.xml"
           echo "  ✓ ic_launcher_background color"
 
-          echo "=== Icon generation complete ==="
-
-      # ─── 9. Capacitor sync ────────────────────────────────────────────────────
-      - name: Sync Capacitor plugins to Android
-        working-directory: artifacts/mafioso
-        run: |
-          echo "=== Syncing Capacitor ==="
-          pnpm exec cap sync android 2>&1
-          echo "=== Sync complete ==="
-
-      # ─── 10. Splash screen (MUST run after cap sync — sync overwrites drawables)
-      - name: Generate splash screen
-        working-directory: artifacts/mafioso
-        run: |
-          echo "=== Creating splash screen ==="
-          ICON_SRC="resources/icon.png"
-          RES="android/app/src/main/res"
-
-          mkdir -p "${RES}/drawable" "${RES}/drawable-land" "${RES}/values" "${RES}/values-v31"
-
-          # Portrait splash (red background + centered icon)
+          # ── Portrait splash (red background + logo, all Android versions) ────
+          mkdir -p "${RES}/drawable" "${RES}/drawable-land"
           convert -size 1080x1920 xc:'#8B0000' \
             \( "$ICON_SRC" -resize 500x500 \) \
             -gravity center -composite \
             "${RES}/drawable/splash.png"
-          echo "  ✓ Portrait: $(du -sh ${RES}/drawable/splash.png | cut -f1)"
+          echo "  ✓ Portrait splash: $(du -sh ${RES}/drawable/splash.png | cut -f1)"
 
-          # Landscape splash
+          # ── Landscape splash ─────────────────────────────────────────────────
           convert -size 1920x1080 xc:'#8B0000' \
             \( "$ICON_SRC" -resize 400x400 \) \
             -gravity center -composite \
             "${RES}/drawable-land/splash.png"
-          echo "  ✓ Landscape: $(du -sh ${RES}/drawable-land/splash.png | cut -f1)"
+          echo "  ✓ Landscape splash: $(du -sh ${RES}/drawable-land/splash.png | cut -f1)"
 
-          # Splash background color (used by Capacitor plugin + Android theme)
+          # ── Splash icon for Android 12+ (logo on red bg, full opaque square) ─
+          # Android 12+ uses windowSplashScreenAnimatedIcon; it must be fully
+          # opaque (no transparency) to avoid the white circle background.
+          convert -size 512x512 xc:'#8B0000' \
+            \( "$ICON_SRC" -resize 360x360 \) \
+            -gravity center -composite \
+            "${RES}/drawable/splash_icon.png"
+          echo "  ✓ Android 12+ splash icon: $(du -sh ${RES}/drawable/splash_icon.png | cut -f1)"
+
+          # ── Splash background color ───────────────────────────────────────────
           printf '%s\n' \
             '<?xml version="1.0" encoding="utf-8"?>' \
             '<resources>' \
             '    <color name="splash_background">#8B0000</color>' \
             '</resources>' \
             > "${RES}/values/splash_colors.xml"
+          echo "  ✓ splash_colors.xml"
 
-          # Android 12+ system splash background (windowSplashScreenBackground)
+          # ── Android 12+ splash theme (values-v31) ────────────────────────────
+          mkdir -p "${RES}/values-v31"
           printf '%s\n' \
             '<?xml version="1.0" encoding="utf-8"?>' \
             '<resources>' \
             '    <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">' \
             '        <item name="windowSplashScreenBackground">#8B0000</item>' \
-            '        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>' \
+            '        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>' \
+            '        <item name="windowSplashScreenIconBackgroundColor">#8B0000</item>' \
             '        <item name="postSplashScreenTheme">@style/AppTheme</item>' \
             '    </style>' \
             '</resources>' \
             > "${RES}/values-v31/splash_styles.xml"
-          echo "  ✓ Android 12+ splash theme"
+          echo "  ✓ Android 12+ splash theme (values-v31)"
 
-          echo "=== Splash screen complete ==="
+          echo "=== Icons + splash generation complete ==="
 
       # ─── 11. Gradle permissions ───────────────────────────────────────────────
       - name: Make gradlew executable
