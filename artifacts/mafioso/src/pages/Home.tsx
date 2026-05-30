@@ -9,36 +9,9 @@ export default function Home() {
   const totalCases = CASES.length + CASES_5P.length + CASES_6P.length;
 
   const stats = [
-    {
-      icon: BookOpen,
-      value: String(totalCases),
-      label: "قضية",
-      color: "text-red-400",
-      glow: "shadow-red-900/60",
-      border: "border-red-900/50",
-      bg: "bg-red-950/40",
-      iconColor: "text-red-500",
-    },
-    {
-      icon: Users,
-      value: "٤-٦",
-      label: "لاعبين",
-      color: "text-amber-400",
-      glow: "shadow-amber-900/60",
-      border: "border-amber-900/50",
-      bg: "bg-amber-950/40",
-      iconColor: "text-amber-500",
-    },
-    {
-      icon: Swords,
-      value: "٣",
-      label: "جولات",
-      color: "text-orange-400",
-      glow: "shadow-orange-900/60",
-      border: "border-orange-900/50",
-      bg: "bg-orange-950/40",
-      iconColor: "text-orange-500",
-    },
+    { icon: BookOpen, value: String(totalCases), label: "قضية" },
+    { icon: Users,    value: "٤-٦",              label: "لاعبين" },
+    { icon: Swords,   value: "٣",                label: "جولات" },
   ];
 
   return (
@@ -141,16 +114,12 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.75 + i * 0.1, duration: 0.4 }}
-              className={`text-center p-3 rounded-2xl border backdrop-blur-sm ${stat.bg} ${stat.border}`}
-              style={{ boxShadow: `0 0 20px var(--tw-shadow-color)` }}
+              className="text-center p-3 rounded-2xl border backdrop-blur-sm bg-black/40 border-amber-900/30"
             >
-              <stat.icon className={`w-4 h-4 mx-auto mb-1 ${stat.iconColor}`} />
+              <stat.icon className="w-4 h-4 mx-auto mb-1 text-amber-500" />
               <div
-                className={`text-2xl font-black ${stat.color}`}
-                style={{
-                  fontFamily: "'Cairo', sans-serif",
-                  textShadow: `0 0 15px currentColor`
-                }}
+                className="text-2xl font-black text-amber-400"
+                style={{ fontFamily: "'Cairo', sans-serif" }}
               >
                 {stat.value}
               </div>
