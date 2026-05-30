@@ -10,7 +10,10 @@ import CaseSelection from "@/pages/CaseSelection";
 import PlayerSetup from "@/pages/PlayerSetup";
 import CardDraw from "@/pages/CardDraw";
 import GamePlay from "@/pages/GamePlay";
+import OnlineMenu from "@/pages/online/OnlineMenu";
+import OnlineRoom from "@/pages/online/OnlineRoom";
 import { GameProvider } from "@/context/GameContext";
+import { OnlineProvider } from "@/context/OnlineContext";
 
 const queryClient = new QueryClient();
 
@@ -29,12 +32,16 @@ async function hideSplash() {
 function Router() {
   return (
     <Switch>
+      {/* Offline routes */}
       <Route path="/" component={Home} />
       <Route path="/cases" component={PlayerCountSelect} />
       <Route path="/cases/:count" component={CaseSelection} />
       <Route path="/setup/:caseId" component={PlayerSetup} />
       <Route path="/draw/:caseId" component={CardDraw} />
       <Route path="/play/:caseId" component={GamePlay} />
+      {/* Online routes */}
+      <Route path="/online" component={OnlineMenu} />
+      <Route path="/online/room" component={OnlineRoom} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -49,21 +56,23 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <GameProvider>
-          {/* Global fixed background — visible on every page */}
-          <div className="fixed inset-0 -z-10 pointer-events-none" aria-hidden="true">
-            <img
-              src="/bg_street_3.webp"
-              alt=""
-              className="w-full h-full object-cover object-center"
-            />
-            <div className="absolute inset-0 bg-black/78" />
-            <div className="absolute inset-0 bg-red-950/12" />
-          </div>
+          <OnlineProvider>
+            {/* Global fixed background */}
+            <div className="fixed inset-0 -z-10 pointer-events-none" aria-hidden="true">
+              <img
+                src="/bg_street_3.webp"
+                alt=""
+                className="w-full h-full object-cover object-center"
+              />
+              <div className="absolute inset-0 bg-black/78" />
+              <div className="absolute inset-0 bg-red-950/12" />
+            </div>
 
-          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            <Router />
-          </WouterRouter>
-          <Toaster />
+            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+              <Router />
+            </WouterRouter>
+            <Toaster />
+          </OnlineProvider>
         </GameProvider>
       </TooltipProvider>
     </QueryClientProvider>

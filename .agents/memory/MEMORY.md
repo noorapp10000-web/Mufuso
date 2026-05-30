@@ -1,0 +1,1 @@
+- [Online multiplayer architecture](online-multiplayer.md) — socket.io server port 8080; Vite proxies /socket.io; case data client-side; private cards via targeted emit

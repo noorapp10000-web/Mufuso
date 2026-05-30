@@ -63,8 +63,13 @@ export default defineConfig({
     strictPort: true,
     host: "0.0.0.0",
     allowedHosts: true,
-    fs: {
-      strict: true,
+    fs: { strict: true },
+    proxy: {
+      "/socket.io": {
+        target: "http://localhost:8080",
+        ws: true,
+        changeOrigin: true,
+      },
     },
   },
   preview: {

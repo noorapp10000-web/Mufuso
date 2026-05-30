@@ -2,7 +2,7 @@ import { useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { CASES } from "@/data/cases";
 import { CASES_5P, CASES_6P } from "@/data/allCases";
-import { BookOpen, Users, Swords } from "lucide-react";
+import { BookOpen, Users, Swords, Wifi, MonitorSmartphone } from "lucide-react";
 
 export default function Home() {
   const [, setLocation] = useLocation();
@@ -130,23 +130,45 @@ export default function Home() {
             ))}
           </motion.div>
 
-          {/* Start button */}
-          <motion.button
+          {/* Mode selection buttons */}
+          <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.9, duration: 0.5 }}
-            onClick={() => setLocation("/cases")}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            className="relative group px-14 py-4 bg-red-700 hover:bg-red-600 rounded-2xl font-bold text-xl text-white transition-all duration-300 shadow-2xl border border-red-600/50"
-            style={{
-              fontFamily: "'Cairo', sans-serif",
-              boxShadow: "0 0 30px rgba(185,28,28,0.45), 0 4px 20px rgba(0,0,0,0.6)"
-            }}
+            className="w-full max-w-xs space-y-3"
           >
-            <span className="relative z-10">ابدأ اللعبة</span>
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          </motion.button>
+            {/* Offline — same device */}
+            <motion.button
+              onClick={() => setLocation("/cases")}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              className="relative group w-full px-6 py-4 bg-red-700 hover:bg-red-600 rounded-2xl font-bold text-white text-lg transition-all duration-300 shadow-2xl border border-red-600/50 flex items-center justify-center gap-3"
+              style={{
+                fontFamily: "'Cairo', sans-serif",
+                boxShadow: "0 0 30px rgba(185,28,28,0.45), 0 4px 20px rgba(0,0,0,0.6)"
+              }}
+            >
+              <MonitorSmartphone className="w-5 h-5 shrink-0" />
+              <span>لعب محلي</span>
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            </motion.button>
+
+            {/* Online — multiplayer */}
+            <motion.button
+              onClick={() => setLocation("/online")}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              className="relative group w-full px-6 py-4 bg-zinc-900 hover:bg-zinc-800 rounded-2xl font-bold text-white text-lg transition-all duration-300 border border-zinc-700/60 flex items-center justify-center gap-3"
+              style={{ fontFamily: "'Cairo', sans-serif" }}
+            >
+              <Wifi className="w-5 h-5 shrink-0 text-green-400" />
+              <span>لعب أونلاين</span>
+              <span className="absolute -top-2 -left-2 bg-green-600 text-white text-xs px-1.5 py-0.5 rounded-full font-bold">
+                جديد
+              </span>
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            </motion.button>
+          </motion.div>
 
           {/* Hint */}
           <motion.p
@@ -156,7 +178,7 @@ export default function Home() {
             className="text-zinc-500 text-xs"
             style={{ fontFamily: "'Cairo', sans-serif" }}
           >
-            اختر قضية · ادخل الأسماء · اكشف المافيوسو
+            محلي: نفس الجهاز · أونلاين: كل لاعب على جهازه
           </motion.p>
         </motion.div>
 
