@@ -40,6 +40,14 @@ jobs:
         working-directory: artifacts/mafioso
         run: npx cap add android
 
+      - name: Add microphone permissions to AndroidManifest
+        working-directory: artifacts/mafioso
+        run: |
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+          if ! grep -q "RECORD_AUDIO" "$MANIFEST"; then
+            sed -i 's|<uses-permission android:name="android.permission.INTERNET"|<uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />\n    <uses-permission android:name="android.permission.INTERNET"|' "$MANIFEST"
+          fi
+
       - name: Sync Capacitor
         working-directory: artifacts/mafioso
         run: npx cap sync android

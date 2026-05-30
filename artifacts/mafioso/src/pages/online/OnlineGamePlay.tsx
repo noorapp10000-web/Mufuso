@@ -2,10 +2,11 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { useOnline, SafePlayer, EliminatedRecord } from "@/context/OnlineContext";
+import { useVoice } from "@/context/VoiceContext";
 import { getCaseById } from "@/data/allCases";
 import {
   ArrowRight, Timer, Vote, Users, Shield, Skull,
-  ChevronDown, ChevronUp, CheckCircle, XCircle, Eye
+  ChevronDown, ChevronUp, CheckCircle, XCircle, Eye, Mic, MicOff,
 } from "lucide-react";
 
 const ROUND_LABELS = ["الأولى", "الثانية", "الثالثة", "الرابعة", "الخامسة"];
@@ -37,6 +38,7 @@ export default function OnlineGamePlay() {
     room, myPlayerId, myCard,
     startDiscuss, skipToVote, castVote, nextRound, playAgain, leaveRoom,
   } = useOnline();
+  const { mutedPlayers, isVoiceReady } = useVoice();
 
   const [expandedChar, setExpandedChar] = useState<string | null>(null);
   const [showTrueStory, setShowTrueStory] = useState(false);
@@ -273,6 +275,11 @@ export default function OnlineGamePlay() {
                 <div key={p.id} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl ${p.id === myPlayerId ? "bg-red-950/30 border border-red-900/30" : "bg-zinc-800"}`}>
                   <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
                   <span className="text-xs font-bold text-white" style={{ fontFamily: "'Cairo', sans-serif" }}>{p.name}</span>
+                  {isVoiceReady && (
+                    mutedPlayers.has(p.id)
+                      ? <MicOff className="w-3 h-3 text-zinc-600" />
+                      : <Mic className="w-3 h-3 text-green-400" />
+                  )}
                 </div>
               ))}
               {gs.eliminatedRecords.map(e => (

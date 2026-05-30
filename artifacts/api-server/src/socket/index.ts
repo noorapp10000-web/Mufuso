@@ -596,6 +596,19 @@ export function setupSocket(httpServer: HttpServer) {
       io.to(room.code).emit("room_updated", { room: safeRoom(room) });
     });
 
+    // ── WEBRTC SIGNALING ────────────────────────────────────────────
+    socket.on("webrtc_signal", ({ targetPlayerId, signal }: { targetPlayerId: string; signal: unknown }) => {
+      const room = getRoom(); if (!room) return;
+      const target = room.players.find(p => p.id === targetPlayerId);
+      if (!target) return;
+      io.to(target.socketId).emit("webrtc_signal", { fromPlayerId: myPlayerId, signal });
+    });
+
+    socket.on("webrtc_mute", ({ isMuted }: { isMuted: boolean }) => {
+      const room = getRoom(); if (!room) return;
+      socket.to(room.code).emit("webrtc_mute", { playerId: myPlayerId, isMuted });
+    });
+
     // ── LEAVE ROOM ─────────────────────────────────────────────────
     socket.on("leave_room", () => {
       handleLeave();

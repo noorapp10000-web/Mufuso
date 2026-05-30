@@ -73,6 +73,19 @@ jobs:
           ls android/ | head -10
           test -d android/app || (echo "ERROR: android/app not found" && exit 1)
 
+      # ─── 7b. Android permissions ──────────────────────────────────────────────
+      - name: Add microphone permissions to AndroidManifest
+        working-directory: artifacts/mafioso
+        run: |
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+          if ! grep -q "RECORD_AUDIO" "$MANIFEST"; then
+            sed -i 's|<uses-permission android:name="android.permission.INTERNET"|<uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />\n    <uses-permission android:name="android.permission.INTERNET"|' "$MANIFEST"
+            echo "✓ RECORD_AUDIO added"
+          else
+            echo "✓ RECORD_AUDIO already present"
+          fi
+          grep "uses-permission" "$MANIFEST"
+
       # ─── 8. Capacitor sync (MUST happen before icons/splash) ──────────────────
       - name: Sync Capacitor plugins to Android
         working-directory: artifacts/mafioso

@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { useOnline, CaseMeta } from "@/context/OnlineContext";
+import { useVoice } from "@/context/VoiceContext";
 import { ALL_CASES } from "@/data/allCases";
-import { ArrowRight, Copy, Check, Users, Play, Settings2, Minus, Plus, AlertCircle, X, UserX, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowRight, Copy, Check, Users, Play, Settings2, Minus, Plus, AlertCircle, X, UserX, ChevronDown, ChevronUp, Mic, MicOff } from "lucide-react";
 
 export default function OnlineLobby() {
   const [, setLocation] = useLocation();
@@ -11,6 +12,7 @@ export default function OnlineLobby() {
     room, myPlayerId, error, clearError,
     selectCase, setDuration, startGame, kickPlayer, leaveRoom,
   } = useOnline();
+  const { mutedPlayers, isVoiceReady } = useVoice();
 
   const [codeCopied, setCodeCopied] = useState(false);
   const [showCaseList, setShowCaseList] = useState(false);
@@ -142,6 +144,11 @@ export default function OnlineLobby() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
+                  {isVoiceReady && (
+                    mutedPlayers.has(player.id)
+                      ? <MicOff className="w-3.5 h-3.5 text-zinc-600" />
+                      : <Mic className="w-3.5 h-3.5 text-green-500" />
+                  )}
                   <div className={`w-2 h-2 rounded-full ${player.isConnected ? "bg-green-500" : "bg-red-600"}`} />
                   {isHost && player.id !== myPlayerId && (
                     <button

@@ -1,6 +1,6 @@
 import {
   createContext, useContext, useState, useEffect,
-  useCallback, useRef, ReactNode,
+  useCallback, useRef, ReactNode, RefObject,
 } from "react";
 import { io, Socket } from "socket.io-client";
 
@@ -74,6 +74,7 @@ interface OnlineContextType {
   myCard: MyCard | null;
   error: string | null;
   clearError: () => void;
+  socketRef: RefObject<Socket | null>;
 
   createRoom: (playerName: string) => void;
   joinRoom: (code: string, playerName: string) => void;
@@ -262,7 +263,7 @@ export function OnlineProvider({ children }: { children: ReactNode }) {
 
   return (
     <OnlineContext.Provider value={{
-      connected, room, myPlayerId, myCard, error, clearError,
+      connected, room, myPlayerId, myCard, error, clearError, socketRef,
       createRoom, joinRoom, reconnectPlayer,
       selectCase, setDuration, startGame,
       confirmCard, startDiscuss, skipToVote,
