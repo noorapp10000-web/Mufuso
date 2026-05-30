@@ -9,6 +9,7 @@ export interface Player {
   hasRevealed: boolean;
   isEliminated: boolean;
   eliminatedInRound?: number;
+  mafiosoPartnerName?: string;
 }
 
 export interface GameState {

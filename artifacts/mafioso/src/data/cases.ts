@@ -27,6 +27,7 @@ export interface Case {
   clues: Clue[];
   trueStory: string;
   culpritId: string;
+  culpritIds?: string[];
 }
 
 export const CASES: Case[] = [

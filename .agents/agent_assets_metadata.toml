@@ -390,6 +390,66 @@ uri = "file://artifacts/mafioso/public/bg_street_4.png"
 type = "image"
 title = "dark Cairo street graffiti option 4"
 
+[[generated]]
+id = "lfsyxAEgrh23AqDuodRSH"
+uri = "file://artifacts/mafioso/public/case-images/case6p_01.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "MI2O9X8fm0Ebt0N_O1wFU"
+uri = "file://artifacts/mafioso/public/case-images/case6p_02.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "1D-bcVv9gobao96UcBv7K"
+uri = "file://artifacts/mafioso/public/case-images/case6p_03.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "0_G4uPNHOaatLWFB1mfDT"
+uri = "file://artifacts/mafioso/public/case-images/case6p_04.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "Ykp72Kfb0sLWWMDdIoT3t"
+uri = "file://artifacts/mafioso/public/case-images/case6p_05.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "_6no4VXYdOcFhUDy0kNn4"
+uri = "file://artifacts/mafioso/public/case-images/case6p_06.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "Rg_l2ULG1mUFF_vfWgBL1"
+uri = "file://artifacts/mafioso/public/case-images/case6p_07.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "beZB_E_2KTkpDvLxWmxWl"
+uri = "file://artifacts/mafioso/public/case-images/case6p_08.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "mDFGx2DsooKIgzwLNzict"
+uri = "file://artifacts/mafioso/public/case-images/case6p_09.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "cq4t1WIBS30a3SzwfVtUn"
+uri = "file://artifacts/mafioso/public/case-images/case6p_10.png"
+type = "image"
+title = "generated_image"
+
 [[outputs]]
 id = "VbYA6GJrIiE0kDruUmuuW"
 uri = "file://artifacts/mafioso/public/bg_street_1.png"
