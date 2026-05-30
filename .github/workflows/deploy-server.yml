@@ -27,21 +27,70 @@ jobs:
       # so Hugging Face does not reject the push for binary files
       - name: Assemble server-only directory
         run: |
-          mkdir -p /tmp/hf-deploy
+          mkdir -p /tmp/hf-deploy/artifacts
 
-          # Server source
           cp -r artifacts/api-server /tmp/hf-deploy/artifacts/
-          # Shared libraries (db, api-zod, api-spec, api-client-react)
-          cp -r lib /tmp/hf-deploy/
-
-          # Workspace config (needed for pnpm workspaces + build)
-          cp package.json         /tmp/hf-deploy/
-          cp pnpm-workspace.yaml  /tmp/hf-deploy/
-          cp pnpm-lock.yaml       /tmp/hf-deploy/
-          cp tsconfig*.json       /tmp/hf-deploy/ 2>/dev/null || true
+          cp -r lib                  /tmp/hf-deploy/
+          cp package.json            /tmp/hf-deploy/
+          cp pnpm-workspace.yaml     /tmp/hf-deploy/
+          cp pnpm-lock.yaml          /tmp/hf-deploy/
+          cp tsconfig.base.json      /tmp/hf-deploy/ 2>/dev/null || true
+          cp tsconfig.json           /tmp/hf-deploy/ 2>/dev/null || true
 
           echo "=== Files to deploy ==="
           find /tmp/hf-deploy -type f | sort
+
+      # HF Space README — tells HF this is a Docker space on port 7860
+      - name: Write README.md for HF Space
+        run: |
+          cat > /tmp/hf-deploy/README.md << 'EOF'
+---
+title: Mafioso Server
+emoji: 🎭
+colorFrom: red
+colorTo: gray
+sdk: docker
+pinned: false
+---
+
+# مافيوسو — API Server
+
+Socket.io game server for the Mafioso Arabic social deduction game.
+Listens on port 7860.
+EOF
+
+      # Dockerfile — builds and runs the Node.js server on port 7860
+      - name: Write Dockerfile for HF Space
+        run: |
+          cat > /tmp/hf-deploy/Dockerfile << 'EOF'
+FROM node:20-slim
+
+# Install pnpm
+RUN npm install -g pnpm@9
+
+WORKDIR /app
+
+# Copy workspace config first (for layer caching)
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY tsconfig.base.json ./tsconfig.base.json 2>/dev/null || true
+COPY tsconfig.json ./tsconfig.json 2>/dev/null || true
+
+# Copy source packages
+COPY lib ./lib
+COPY artifacts/api-server ./artifacts/api-server
+
+# Install all dependencies
+RUN pnpm install --no-frozen-lockfile
+
+# Build the API server bundle
+RUN pnpm --filter @workspace/api-server run build
+
+# HF Docker Spaces must listen on port 7860
+ENV PORT=7860
+EXPOSE 7860
+
+CMD ["node", "--enable-source-maps", "./artifacts/api-server/dist/index.mjs"]
+EOF
 
       - name: Push to Hugging Face Space
         env:
