@@ -38,7 +38,7 @@ export default function OnlineGamePlay() {
     room, myPlayerId, myCard,
     startDiscuss, skipToVote, castVote, nextRound, playAgain, leaveRoom,
   } = useOnline();
-  const { mutedPlayers, isVoiceReady } = useVoice();
+  const { isMuted, mutedPlayers, isVoiceReady } = useVoice();
 
   const [expandedChar, setExpandedChar] = useState<string | null>(null);
   const [showTrueStory, setShowTrueStory] = useState(false);
@@ -276,7 +276,7 @@ export default function OnlineGamePlay() {
                   <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
                   <span className="text-xs font-bold text-white" style={{ fontFamily: "'Cairo', sans-serif" }}>{p.name}</span>
                   {isVoiceReady && (
-                    mutedPlayers.has(p.id)
+                    (p.id === myPlayerId ? isMuted : mutedPlayers.has(p.id))
                       ? <MicOff className="w-3 h-3 text-zinc-600" />
                       : <Mic className="w-3 h-3 text-green-400" />
                   )}

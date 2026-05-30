@@ -12,7 +12,7 @@ export default function OnlineLobby() {
     room, myPlayerId, error, clearError,
     selectCase, setDuration, startGame, kickPlayer, leaveRoom,
   } = useOnline();
-  const { mutedPlayers, isVoiceReady } = useVoice();
+  const { isMuted, mutedPlayers, isVoiceReady } = useVoice();
 
   const [codeCopied, setCodeCopied] = useState(false);
   const [showCaseList, setShowCaseList] = useState(false);
@@ -24,8 +24,8 @@ export default function OnlineLobby() {
   const isHost = me?.isHost ?? false;
   const connectedCount = room.players.filter(p => p.isConnected).length;
 
-  // Filter cases by player count
-  const eligibleCases = ALL_CASES.filter(c => c.characters.length === connectedCount);
+  // Show all cases — host can pre-select before all players arrive
+  const eligibleCases = ALL_CASES;
 
   function handleCopyCode() {
     navigator.clipboard.writeText(room!.code).then(() => {
@@ -145,7 +145,7 @@ export default function OnlineLobby() {
                 </div>
                 <div className="flex items-center gap-2">
                   {isVoiceReady && (
-                    mutedPlayers.has(player.id)
+                    (player.id === myPlayerId ? isMuted : mutedPlayers.has(player.id))
                       ? <MicOff className="w-3.5 h-3.5 text-zinc-600" />
                       : <Mic className="w-3.5 h-3.5 text-green-500" />
                   )}
@@ -227,13 +227,9 @@ export default function OnlineLobby() {
                   exit={{ opacity: 0, height: 0 }}
                   className="overflow-hidden"
                 >
-                  {connectedCount < 4 ? (
+                  {eligibleCases.length === 0 ? (
                     <p className="text-center text-sm text-zinc-500 py-4" style={{ fontFamily: "'Cairo', sans-serif" }}>
-                      يحتاج ٤ لاعبين على الأقل لاختيار قضية
-                    </p>
-                  ) : eligibleCases.length === 0 ? (
-                    <p className="text-center text-sm text-zinc-500 py-4" style={{ fontFamily: "'Cairo', sans-serif" }}>
-                      لا توجد قضايا لـ {connectedCount} لاعبين
+                      لا توجد قضايا متاحة
                     </p>
                   ) : (
                     <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
@@ -255,7 +251,16 @@ export default function OnlineLobby() {
                                 : "bg-zinc-900/50 border-zinc-800 text-zinc-300 hover:border-red-700/30 hover:bg-red-950/10"
                             }`}
                           >
-                            <p className="font-bold text-sm" style={{ fontFamily: "'Cairo', sans-serif" }}>{c.title}</p>
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="font-bold text-sm" style={{ fontFamily: "'Cairo', sans-serif" }}>{c.title}</p>
+                              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${
+                                c.characters.length === connectedCount
+                                  ? "bg-green-900/60 text-green-400 border border-green-800"
+                                  : "bg-zinc-800 text-zinc-500 border border-zinc-700"
+                              }`}>
+                                {c.characters.length} لاعبين
+                              </span>
+                            </div>
                             <p className="text-xs text-zinc-500 mt-0.5">{c.category}</p>
                           </button>
                         );
