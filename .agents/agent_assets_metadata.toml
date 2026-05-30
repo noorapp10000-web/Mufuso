@@ -647,3 +647,9 @@ id = "Se4Ky1esAOLsiW2P3wiRZ"
 uri = "file://hf-server.tar.gz"
 type = "unspecified"
 title = "mafioso-server (HF Deploy)"
+
+[[outputs]]
+id = "MyET8vwChXGYreinkUPfx"
+uri = "file://hf-server.zip"
+type = "unspecified"
+title = "mafioso-server (HF Deploy).zip"
