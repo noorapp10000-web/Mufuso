@@ -52,7 +52,6 @@ const AUDIO_CONSTRAINTS: MediaStreamConstraints = {
 
 // VAD config
 const VAD_SILENCE_THRESHOLD = 0.015; // RMS below this = silent
-const VAD_SILENCE_DELAY_MS  = 1500;  // mute after 1.5s of silence
 const VAD_POLL_MS           = 80;    // check every 80ms
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -107,10 +106,7 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
   // VAD refs
   const vadCtxRef       = useRef<AudioContext | null>(null);
   const vadAnalyserRef  = useRef<AnalyserNode | null>(null);
-  const vadTimerRef     = useRef<ReturnType<typeof setTimeout> | null>(null);
   const vadIntervalRef  = useRef<ReturnType<typeof setInterval> | null>(null);
-  const silentSinceRef  = useRef<number | null>(null);
-  const vadMutedRef     = useRef(false); // muted by VAD (not manual)
 
   // ── Unlock audio on first user gesture ──────────────────────────────────────
   useEffect(() => {
@@ -207,28 +203,32 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
   }
 
   // ── VAD: Voice Activity Detection ───────────────────────────────────────────
+  // VAD is used ONLY for the speaking indicator — it never touches track.enabled.
+  // Auto-muting the track caused silence on Android WebView (analyser returns zeros
+  // intermittently, so the track would get disabled and never re-enabled).
   function startVAD(stream: MediaStream) {
     try {
       const ctx      = new AudioContext();
       const source   = ctx.createMediaStreamSource(stream);
       const analyser = ctx.createAnalyser();
-      analyser.fftSize       = 512;
+      analyser.fftSize              = 512;
       analyser.smoothingTimeConstant = 0.3;
       source.connect(analyser);
       // Do NOT connect analyser → ctx.destination (avoid local playback)
 
-      vadCtxRef.current     = ctx;
+      vadCtxRef.current      = ctx;
       vadAnalyserRef.current = analyser;
 
       const buf = new Float32Array(analyser.fftSize);
 
       vadIntervalRef.current = setInterval(() => {
+        // When manually muted, always report not speaking
         if (isMutedRef.current) {
-          // Manual mute → don't fight VAD state
-          if (vadMutedRef.current) {
-            vadMutedRef.current = false;
+          if (isSpeakingRef.current) {
+            isSpeakingRef.current = false;
+            setIsSpeaking(false);
+            socketRef.current?.emit("webrtc_speaking", { isSpeaking: false });
           }
-          setIsSpeaking(false);
           return;
         }
 
@@ -236,38 +236,12 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
         let sum = 0;
         for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
         const rms = Math.sqrt(sum / buf.length);
+        const speaking = rms > VAD_SILENCE_THRESHOLD;
 
-        if (rms > VAD_SILENCE_THRESHOLD) {
-          // Voice detected
-          silentSinceRef.current = null;
-          if (vadTimerRef.current) {
-            clearTimeout(vadTimerRef.current);
-            vadTimerRef.current = null;
-          }
-          if (vadMutedRef.current) {
-            stream.getAudioTracks().forEach(t => { t.enabled = true; });
-            vadMutedRef.current = false;
-          }
-          if (!isSpeakingRef.current) {
-            isSpeakingRef.current = true;
-            setIsSpeaking(true);
-            socketRef.current?.emit("webrtc_speaking", { isSpeaking: true });
-          }
-        } else {
-          // Silence
-          if (isSpeakingRef.current) {
-            isSpeakingRef.current = false;
-            setIsSpeaking(false);
-            socketRef.current?.emit("webrtc_speaking", { isSpeaking: false });
-          }
-          if (!vadMutedRef.current && silentSinceRef.current === null) {
-            silentSinceRef.current = Date.now();
-            vadTimerRef.current = setTimeout(() => {
-              // Still silent after delay → mute the track to kill background noise
-              stream.getAudioTracks().forEach(t => { t.enabled = false; });
-              vadMutedRef.current = true;
-            }, VAD_SILENCE_DELAY_MS);
-          }
+        if (speaking !== isSpeakingRef.current) {
+          isSpeakingRef.current = speaking;
+          setIsSpeaking(speaking);
+          socketRef.current?.emit("webrtc_speaking", { isSpeaking: speaking });
         }
       }, VAD_POLL_MS);
     } catch (err) {
@@ -277,12 +251,9 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
 
   function stopVAD() {
     if (vadIntervalRef.current) { clearInterval(vadIntervalRef.current); vadIntervalRef.current = null; }
-    if (vadTimerRef.current)    { clearTimeout(vadTimerRef.current);     vadTimerRef.current    = null; }
     vadCtxRef.current?.close().catch(() => {});
-    vadCtxRef.current     = null;
+    vadCtxRef.current      = null;
     vadAnalyserRef.current = null;
-    silentSinceRef.current = null;
-    vadMutedRef.current    = false;
     setIsSpeaking(false);
   }
 
@@ -467,10 +438,6 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
     if (!stream) return;
     const next = !isMutedRef.current;
     isMutedRef.current = next;
-    // When manually unmuting: also clear any VAD mute so track re-enables
-    if (!next && vadMutedRef.current) {
-      vadMutedRef.current = false;
-    }
     stream.getAudioTracks().forEach(t => { t.enabled = !next; });
     setIsMuted(next);
     socketRef.current?.emit("webrtc_mute", { isMuted: next });
