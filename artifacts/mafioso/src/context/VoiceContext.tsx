@@ -144,8 +144,15 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
   }
 
   // ── Build peer connection ────────────────────────────────────────────────────
-  const buildPeer = useCallback((targetPlayerId: string): PeerState => {
-    const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+  // Returns null if RTCPeerConnection is unavailable (some Android WebViews).
+  const buildPeer = useCallback((targetPlayerId: string): PeerState | null => {
+    let pc: RTCPeerConnection;
+    try {
+      pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+    } catch (err) {
+      console.warn("[Voice] RTCPeerConnection failed:", err);
+      return null;
+    }
 
     // Send local tracks to this peer
     localStreamRef.current?.getTracks().forEach(t => {
@@ -286,20 +293,29 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
 
     let cancelled = false;
 
-    navigator.mediaDevices.getUserMedia(AUDIO_CONSTRAINTS)
-      .then(stream => {
+    // Use async IIFE with try/catch so synchronous errors (e.g. navigator.mediaDevices
+    // being undefined in Capacitor WebView without HTTPS or without granted permissions)
+    // are caught just like async errors — preventing a full WebView crash / black screen.
+    (async () => {
+      try {
+        // Guard: API may not exist in Capacitor/Android if context isn't secure
+        if (typeof navigator === "undefined" ||
+            !navigator.mediaDevices?.getUserMedia) {
+          throw new Error("getUserMedia not available");
+        }
+        const stream = await navigator.mediaDevices.getUserMedia(AUDIO_CONSTRAINTS);
         if (cancelled) { stream.getTracks().forEach(t => t.stop()); return; }
         stream.getAudioTracks().forEach(t => { t.enabled = true; });
         localStreamRef.current = stream;
         setIsVoiceReady(true);
         setVoiceError(null);
         startVAD(stream);
-      })
-      .catch(err => {
+      } catch (err) {
         if (cancelled) return;
         console.warn("[Voice] getUserMedia failed:", err);
         setVoiceError("تعذّر الوصول إلى الميكروفون");
-      });
+      }
+    })();
 
     return () => { cancelled = true; };
   }, [!!room, myPlayerId]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -340,6 +356,7 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
       if (peersRef.current.has(player.id)) continue;
 
       const peer = buildPeer(player.id);
+      if (!peer) continue; // RTCPeerConnection unavailable on this device
       peersRef.current.set(player.id, peer);
       iceQueueRef.current.set(player.id, []);
 
@@ -375,7 +392,9 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
       };
     }) {
       if (!peersRef.current.has(fromPlayerId)) {
-        peersRef.current.set(fromPlayerId, buildPeer(fromPlayerId));
+        const newPeer = buildPeer(fromPlayerId);
+        if (!newPeer) return; // RTCPeerConnection unavailable
+        peersRef.current.set(fromPlayerId, newPeer);
         iceQueueRef.current.set(fromPlayerId, []);
       }
       const { pc } = peersRef.current.get(fromPlayerId)!;
