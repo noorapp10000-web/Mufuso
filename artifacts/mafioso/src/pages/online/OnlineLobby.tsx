@@ -12,7 +12,7 @@ export default function OnlineLobby() {
     room, myPlayerId, error, clearError,
     selectCase, setDuration, startGame, kickPlayer, leaveRoom,
   } = useOnline();
-  const { isMuted, mutedPlayers, isVoiceReady } = useVoice();
+  const { isMuted, isSpeaking, mutedPlayers, speakingPlayers, isVoiceReady } = useVoice();
 
   const [codeCopied, setCodeCopied] = useState(false);
   const [showCaseList, setShowCaseList] = useState(false);
@@ -144,11 +144,22 @@ export default function OnlineLobby() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {isVoiceReady && (
-                    (player.id === myPlayerId ? isMuted : mutedPlayers.has(player.id))
-                      ? <MicOff className="w-3.5 h-3.5 text-zinc-600" />
-                      : <Mic className="w-3.5 h-3.5 text-green-500" />
-                  )}
+                  {isVoiceReady && (() => {
+                    const playerMuted   = player.id === myPlayerId ? isMuted   : mutedPlayers.has(player.id);
+                    const playerSpeaking = player.id === myPlayerId ? isSpeaking : speakingPlayers.has(player.id);
+                    if (playerMuted) {
+                      return <MicOff className="w-3.5 h-3.5 text-zinc-600" />;
+                    }
+                    if (playerSpeaking) {
+                      return (
+                        <span className="relative flex items-center justify-center w-3.5 h-3.5">
+                          <span className="absolute inline-flex w-full h-full rounded-full bg-green-400 opacity-60 animate-ping" />
+                          <span className="relative inline-flex w-2 h-2 rounded-full bg-green-400" />
+                        </span>
+                      );
+                    }
+                    return <Mic className="w-3.5 h-3.5 text-zinc-500" />;
+                  })()}
                   <div className={`w-2 h-2 rounded-full ${player.isConnected ? "bg-green-500" : "bg-red-600"}`} />
                   {isHost && player.id !== myPlayerId && (
                     <button

@@ -38,12 +38,13 @@ interface PeerState {
 }
 
 interface VoiceContextType {
-  isMuted:     boolean;
-  isSpeaking:  boolean;       // true when VAD detects local voice
-  toggleMute:  () => void;
-  mutedPlayers: Set<string>;
-  isVoiceReady: boolean;
-  voiceError:   string | null;
+  isMuted:         boolean;
+  isSpeaking:      boolean;         // true when VAD detects local voice
+  toggleMute:      () => void;
+  mutedPlayers:    Set<string>;
+  speakingPlayers: Set<string>;     // remote players currently speaking
+  isVoiceReady:    boolean;
+  voiceError:      string | null;
 }
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -61,11 +62,14 @@ export function useVoice() {
 export function VoiceProvider({ children }: { children: ReactNode }) {
   const { room, myPlayerId, connected, socketRef } = useOnline();
 
-  const [isMuted,      setIsMuted]      = useState(false);
-  const [isSpeaking,   setIsSpeaking]   = useState(false);
-  const [mutedPlayers, setMutedPlayers] = useState<Set<string>>(new Set());
-  const [isVoiceReady, setIsVoiceReady] = useState(false);
-  const [voiceError,   setVoiceError]   = useState<string | null>(null);
+  const [isMuted,         setIsMuted]         = useState(false);
+  const [isSpeaking,      setIsSpeaking]      = useState(false);
+  const [mutedPlayers,    setMutedPlayers]    = useState<Set<string>>(new Set());
+  const [speakingPlayers, setSpeakingPlayers] = useState<Set<string>>(new Set());
+  const [isVoiceReady,    setIsVoiceReady]    = useState(false);
+  const [voiceError,      setVoiceError]      = useState<string | null>(null);
+
+  const isSpeakingRef = useRef(false); // track last emitted state to avoid duplicate emits
 
   const localStreamRef  = useRef<MediaStream | null>(null);
   const peersRef        = useRef<Map<string, PeerState>>(new Map());
@@ -208,14 +212,21 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
             vadTimerRef.current = null;
           }
           if (vadMutedRef.current) {
-            // Unmute the track — voice is back
             stream.getAudioTracks().forEach(t => { t.enabled = true; });
             vadMutedRef.current = false;
           }
-          setIsSpeaking(true);
+          if (!isSpeakingRef.current) {
+            isSpeakingRef.current = true;
+            setIsSpeaking(true);
+            socketRef.current?.emit("webrtc_speaking", { isSpeaking: true });
+          }
         } else {
           // Silence
-          setIsSpeaking(false);
+          if (isSpeakingRef.current) {
+            isSpeakingRef.current = false;
+            setIsSpeaking(false);
+            socketRef.current?.emit("webrtc_speaking", { isSpeaking: false });
+          }
           if (!vadMutedRef.current && silentSinceRef.current === null) {
             silentSinceRef.current = Date.now();
             vadTimerRef.current = setTimeout(() => {
@@ -274,11 +285,14 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
     localStreamRef.current?.getTracks().forEach(t => t.stop());
     localStreamRef.current = null;
     for (const pid of [...peersRef.current.keys()]) destroyPeer(pid);
-    pendingPlayRef.current = [];
-    initDoneRef.current    = false;
+    pendingPlayRef.current  = [];
+    initDoneRef.current     = false;
+    isSpeakingRef.current   = false;
     setIsVoiceReady(false);
     setMutedPlayers(new Set());
+    setSpeakingPlayers(new Set());
     setIsMuted(false);
+    setIsSpeaking(false);
     isMutedRef.current = false;
   }, [room]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -384,11 +398,21 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
       });
     }
 
-    socket.on("webrtc_signal", handleSignal);
-    socket.on("webrtc_mute",   handleMute);
+    function handleSpeaking({ playerId, isSpeaking: speaking }: { playerId: string; isSpeaking: boolean }) {
+      setSpeakingPlayers(prev => {
+        const next = new Set(prev);
+        speaking ? next.add(playerId) : next.delete(playerId);
+        return next;
+      });
+    }
+
+    socket.on("webrtc_signal",   handleSignal);
+    socket.on("webrtc_mute",     handleMute);
+    socket.on("webrtc_speaking", handleSpeaking);
     return () => {
-      socket.off("webrtc_signal", handleSignal);
-      socket.off("webrtc_mute",   handleMute);
+      socket.off("webrtc_signal",   handleSignal);
+      socket.off("webrtc_mute",     handleMute);
+      socket.off("webrtc_speaking", handleSpeaking);
     };
   }, [connected, myPlayerId, socketRef, buildPeer]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -409,7 +433,7 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
 
   return (
     <VoiceContext.Provider value={{
-      isMuted, isSpeaking, toggleMute, mutedPlayers, isVoiceReady, voiceError,
+      isMuted, isSpeaking, toggleMute, mutedPlayers, speakingPlayers, isVoiceReady, voiceError,
     }}>
       {children}
     </VoiceContext.Provider>

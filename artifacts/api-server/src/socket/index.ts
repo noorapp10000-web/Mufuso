@@ -609,6 +609,11 @@ export function setupSocket(httpServer: HttpServer) {
       socket.to(room.code).emit("webrtc_mute", { playerId: myPlayerId, isMuted });
     });
 
+    socket.on("webrtc_speaking", ({ isSpeaking }: { isSpeaking: boolean }) => {
+      const room = getRoom(); if (!room) return;
+      socket.to(room.code).emit("webrtc_speaking", { playerId: myPlayerId, isSpeaking });
+    });
+
     // ── LEAVE ROOM ─────────────────────────────────────────────────
     socket.on("leave_room", () => {
       handleLeave();
