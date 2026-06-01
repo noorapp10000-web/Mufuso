@@ -11,19 +11,15 @@ const ICE_SERVERS: RTCIceServer[] = [
   { urls: "stun:global.stun.twilio.com:3478" },
 ];
 
-// Force hardware AEC on Android — same mode as a native phone call
-// The `advanced` array is a Chrome/WebView hint to activate hardware-level AEC
+// echoCancellation: true  → REQUIRED (not optional) — Android activates hardware AEC
+// exactly like WhatsApp/native phone calls do.
+// noiseSuppression + autoGainControl also required for call-quality audio.
 const AUDIO_CONSTRAINTS: MediaStreamConstraints = {
   audio: {
-    echoCancellation: { ideal: true },
-    noiseSuppression: { ideal: true },
-    autoGainControl:  { ideal: true },
-    // @ts-ignore — `advanced` is a Chrome extension to the spec
-    advanced: [
-      { echoCancellation: true },
-      { noiseSuppression: true },
-    ],
-    channelCount: 1,
+    echoCancellation: true,
+    noiseSuppression: true,
+    autoGainControl:  true,
+    channelCount:     1,
   },
   video: false,
 };
