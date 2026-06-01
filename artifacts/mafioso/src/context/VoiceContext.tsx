@@ -155,14 +155,20 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
       pc.addTrack(t, localStreamRef.current!);
     });
 
-    // Create a dedicated audio element for this remote peer
-    // NEVER feed local stream into an audio element (that would echo back)
-    // Volume at 0.75 gives headroom for 6 simultaneous streams without clipping
+    // Create a dedicated audio element for this remote peer.
+    // NEVER feed local stream into an audio element (that would echo back).
+    // Volume at 0.75 gives headroom for 6 simultaneous streams without clipping.
+    //
+    // Android WebView requirement: audio elements MUST be attached to the DOM
+    // to play reliably. A detached Audio() object is silently dropped on some
+    // Android versions. We append hidden, then remove in destroyPeer.
     const audio = new Audio();
     audio.autoplay = true;
     audio.volume   = 0.75;
     audio.muted    = false;
     audio.setAttribute("playsinline", "");
+    audio.style.display = "none";
+    document.body.appendChild(audio);
 
     pc.ontrack = ev => {
       const stream = ev.streams[0];
@@ -281,6 +287,27 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
         setIsVoiceReady(true);
         setVoiceError(null);
         startVAD(stream);
+
+        // ── Retrofit tracks onto peers that were built before mic was ready ──────
+        // If remote players sent us an offer before getUserMedia completed, their
+        // peer connections were built with localStreamRef=null → no local tracks →
+        // they can send audio to us but we can't send back. Fix by adding tracks
+        // to those peers and renegotiating now that the stream is available.
+        for (const [pid, peer] of peersRef.current) {
+          if (peer.pc.getSenders().filter(s => s.track !== null).length > 0) continue;
+          stream.getTracks().forEach(t => peer.pc.addTrack(t, stream));
+          // Always re-offer when retrofitting — no glare risk here because only
+          // one side (the one whose getUserMedia just completed) does this.
+          peer.pc.createOffer({ offerToReceiveAudio: true })
+            .then(offer => peer.pc.setLocalDescription(offer))
+            .then(() => {
+              socketRef.current?.emit("webrtc_signal", {
+                targetPlayerId: pid,
+                signal: { type: "offer", sdp: peer.pc.localDescription },
+              });
+            })
+            .catch(err => console.warn("[Voice] retrofit offer failed:", err));
+        }
       } catch (err) {
         if (cancelled) return;
         console.warn("[Voice] getUserMedia failed:", err);
