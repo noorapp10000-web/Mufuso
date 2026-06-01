@@ -124,9 +124,10 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
 
     // Create a dedicated audio element for this remote peer
     // NEVER feed local stream into an audio element (that would echo back)
+    // Volume at 0.75 gives headroom for 6 simultaneous streams without clipping
     const audio = new Audio();
     audio.autoplay = true;
-    audio.volume   = 0.9; // slight headroom for 6 simultaneous speakers
+    audio.volume   = 0.75;
     audio.muted    = false;
     audio.setAttribute("playsinline", "");
 
