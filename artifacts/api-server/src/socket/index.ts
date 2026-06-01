@@ -132,6 +132,8 @@ function safeRoom(room: Room) {
 
 function migrateHost(room: Room) {
   if (room.players.some(p => p.isHost && p.isConnected)) return;
+  // Clear ALL existing host flags before promoting — prevents multiple "مضيف" badges
+  room.players.forEach(p => { p.isHost = false; });
   const next = room.players.find(p => p.isConnected);
   if (next) { next.isHost = true; logger.info({ code: room.code, newHost: next.name }, "Host migrated"); }
 }

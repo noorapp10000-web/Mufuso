@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, Component, ReactNode } from "react";
 import { useLocation } from "wouter";
 import { useOnline } from "@/context/OnlineContext";
 import { VoiceProvider, useVoice } from "@/context/VoiceContext";
@@ -6,6 +6,37 @@ import OnlineLobby from "./OnlineLobby";
 import OnlineCardDraw from "./OnlineCardDraw";
 import OnlineGamePlay from "./OnlineGamePlay";
 import { Mic, MicOff, WifiOff } from "lucide-react";
+
+// ── Error Boundary ─────────────────────────────────────────────────────────────
+// Catches crashes in VoiceProvider / WebRTC / AudioContext so the screen
+// doesn't go black. Shows a graceful fallback and keeps the game visible.
+class VoiceErrorBoundary extends Component<
+  { children: ReactNode },
+  { crashed: boolean }
+> {
+  state = { crashed: false };
+  static getDerivedStateFromError() { return { crashed: true }; }
+  componentDidCatch(err: unknown) {
+    console.error("[VoiceProvider] crashed — voice disabled:", err);
+  }
+  render() {
+    if (this.state.crashed) {
+      // Render children WITHOUT voice — game continues, mic just disabled
+      return (
+        <>
+          {this.props.children}
+          <div className="fixed bottom-6 left-4 z-50 flex items-center gap-2 px-3 py-2 rounded-2xl bg-zinc-900/90 border border-zinc-700">
+            <WifiOff className="w-4 h-4 text-zinc-500" />
+            <span className="text-xs text-zinc-500" style={{ fontFamily: "'Cairo', sans-serif" }}>
+              الصوت غير متاح
+            </span>
+          </div>
+        </>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 function FloatingMicButton() {
   const { isMuted, isSpeaking, toggleMute, isVoiceReady, voiceError } = useVoice();
@@ -84,8 +115,10 @@ function RoomContent() {
 
 export default function OnlineRoom() {
   return (
-    <VoiceProvider>
-      <RoomContent />
-    </VoiceProvider>
+    <VoiceErrorBoundary>
+      <VoiceProvider>
+        <RoomContent />
+      </VoiceProvider>
+    </VoiceErrorBoundary>
   );
 }
