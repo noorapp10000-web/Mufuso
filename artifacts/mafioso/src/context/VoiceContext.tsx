@@ -11,34 +11,43 @@ const ICE_SERVERS: RTCIceServer[] = [
   { urls: "stun:global.stun.twilio.com:3478" },
 ];
 
-// echoCancellation: false → disables Android hardware AEC that forces half-duplex
-// noiseSuppression + autoGainControl stay on for voice quality
+// Force hardware AEC on Android — same mode as a native phone call
+// The `advanced` array is a Chrome/WebView hint to activate hardware-level AEC
 const AUDIO_CONSTRAINTS: MediaStreamConstraints = {
   audio: {
-    echoCancellation: false,
-    noiseSuppression: true,
-    autoGainControl: true,
-    // @ts-ignore
-    sampleRate: 48000,
+    echoCancellation: { ideal: true },
+    noiseSuppression: { ideal: true },
+    autoGainControl:  { ideal: true },
+    // @ts-ignore — `advanced` is a Chrome extension to the spec
+    advanced: [
+      { echoCancellation: true },
+      { noiseSuppression: true },
+    ],
     channelCount: 1,
   },
   video: false,
 };
 
+// VAD config
+const VAD_SILENCE_THRESHOLD = 0.015; // RMS below this = silent
+const VAD_SILENCE_DELAY_MS  = 1500;  // mute after 1.5s of silence
+const VAD_POLL_MS           = 80;    // check every 80ms
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface PeerState {
-  pc: RTCPeerConnection;
-  audio: HTMLAudioElement;
+  pc:          RTCPeerConnection;
+  audio:       HTMLAudioElement;
   makingOffer: boolean;
 }
 
 interface VoiceContextType {
-  isMuted: boolean;
-  toggleMute: () => void;
+  isMuted:     boolean;
+  isSpeaking:  boolean;       // true when VAD detects local voice
+  toggleMute:  () => void;
   mutedPlayers: Set<string>;
   isVoiceReady: boolean;
-  voiceError: string | null;
+  voiceError:   string | null;
 }
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -56,23 +65,28 @@ export function useVoice() {
 export function VoiceProvider({ children }: { children: ReactNode }) {
   const { room, myPlayerId, connected, socketRef } = useOnline();
 
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted,      setIsMuted]      = useState(false);
+  const [isSpeaking,   setIsSpeaking]   = useState(false);
   const [mutedPlayers, setMutedPlayers] = useState<Set<string>>(new Set());
   const [isVoiceReady, setIsVoiceReady] = useState(false);
-  const [voiceError, setVoiceError] = useState<string | null>(null);
+  const [voiceError,   setVoiceError]   = useState<string | null>(null);
 
-  const localStreamRef = useRef<MediaStream | null>(null);
-  const peersRef       = useRef<Map<string, PeerState>>(new Map());
-  const isMutedRef     = useRef(false);
-  const initDoneRef    = useRef(false);
+  const localStreamRef  = useRef<MediaStream | null>(null);
+  const peersRef        = useRef<Map<string, PeerState>>(new Map());
+  const isMutedRef      = useRef(false);
+  const initDoneRef     = useRef(false);
+  const iceQueueRef     = useRef<Map<string, RTCIceCandidateInit[]>>(new Map());
+  const pendingPlayRef  = useRef<HTMLAudioElement[]>([]);
 
-  // Per-peer ICE queue — buffers candidates arriving before setRemoteDescription
-  const iceQueueRef = useRef<Map<string, RTCIceCandidateInit[]>>(new Map());
+  // VAD refs
+  const vadCtxRef       = useRef<AudioContext | null>(null);
+  const vadAnalyserRef  = useRef<AnalyserNode | null>(null);
+  const vadTimerRef     = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const vadIntervalRef  = useRef<ReturnType<typeof setInterval> | null>(null);
+  const silentSinceRef  = useRef<number | null>(null);
+  const vadMutedRef     = useRef(false); // muted by VAD (not manual)
 
-  // Pending audio elements that couldn't autoplay — unlocked on next user touch
-  const pendingPlayRef = useRef<HTMLAudioElement[]>([]);
-
-  // ── Unlock audio on first user gesture (needed on Android WebView) ──────────
+  // ── Unlock audio on first user gesture ──────────────────────────────────────
   useEffect(() => {
     function unlock() {
       pendingPlayRef.current.forEach(a => a.play().catch(() => {}));
@@ -86,7 +100,7 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // ── Helper: try to play audio, queue if blocked ───────────────────────────
+  // ── Play helper ─────────────────────────────────────────────────────────────
   function tryPlay(audio: HTMLAudioElement) {
     const p = audio.play();
     if (p !== undefined) {
@@ -94,7 +108,7 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  // ── Drain queued ICE candidates for a peer ───────────────────────────────
+  // ── ICE queue drain ─────────────────────────────────────────────────────────
   async function drainIceQueue(fromPlayerId: string, pc: RTCPeerConnection) {
     const queued = iceQueueRef.current.get(fromPlayerId) ?? [];
     iceQueueRef.current.set(fromPlayerId, []);
@@ -103,30 +117,31 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  // ── Build an RTCPeerConnection for a remote player ────────────────────────
+  // ── Build peer connection ────────────────────────────────────────────────────
   const buildPeer = useCallback((targetPlayerId: string): PeerState => {
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
 
-    // Add local tracks
+    // Send local tracks to this peer
     localStreamRef.current?.getTracks().forEach(t => {
       pc.addTrack(t, localStreamRef.current!);
     });
 
-    // Remote audio element
+    // Create a dedicated audio element for this remote peer
+    // NEVER feed local stream into an audio element (that would echo back)
     const audio = new Audio();
-    audio.autoplay  = true;
-    audio.volume    = 1.0;
-    audio.muted     = false;
+    audio.autoplay = true;
+    audio.volume   = 0.9; // slight headroom for 6 simultaneous speakers
+    audio.muted    = false;
     audio.setAttribute("playsinline", "");
 
     pc.ontrack = ev => {
-      if (audio.srcObject !== ev.streams[0]) {
-        audio.srcObject = ev.streams[0];
+      const stream = ev.streams[0];
+      if (audio.srcObject !== stream) {
+        audio.srcObject = stream;
         tryPlay(audio);
       }
     };
 
-    // ICE trickle
     pc.onicecandidate = ev => {
       if (ev.candidate) {
         socketRef.current?.emit("webrtc_signal", {
@@ -138,15 +153,99 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
 
     pc.oniceconnectionstatechange = () => {
       console.info(`[Voice] ICE ${targetPlayerId} →`, pc.iceConnectionState);
-      if (pc.iceConnectionState === "failed") {
-        pc.restartIce();
-      }
+      if (pc.iceConnectionState === "failed") pc.restartIce();
     };
 
     return { pc, audio, makingOffer: false };
   }, [socketRef]);
 
-  // ── Init microphone when entering a room ──────────────────────────────────
+  // ── Destroy a single peer cleanly ───────────────────────────────────────────
+  function destroyPeer(pid: string) {
+    const peer = peersRef.current.get(pid);
+    if (!peer) return;
+    peer.pc.close();
+    peer.audio.pause();
+    peer.audio.srcObject = null;
+    // Remove from DOM if it was ever appended (safety net)
+    peer.audio.remove();
+    peersRef.current.delete(pid);
+    iceQueueRef.current.delete(pid);
+  }
+
+  // ── VAD: Voice Activity Detection ───────────────────────────────────────────
+  function startVAD(stream: MediaStream) {
+    try {
+      const ctx      = new AudioContext();
+      const source   = ctx.createMediaStreamSource(stream);
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize       = 512;
+      analyser.smoothingTimeConstant = 0.3;
+      source.connect(analyser);
+      // Do NOT connect analyser → ctx.destination (avoid local playback)
+
+      vadCtxRef.current     = ctx;
+      vadAnalyserRef.current = analyser;
+
+      const buf = new Float32Array(analyser.fftSize);
+
+      vadIntervalRef.current = setInterval(() => {
+        if (isMutedRef.current) {
+          // Manual mute → don't fight VAD state
+          if (vadMutedRef.current) {
+            vadMutedRef.current = false;
+          }
+          setIsSpeaking(false);
+          return;
+        }
+
+        analyser.getFloatTimeDomainData(buf);
+        let sum = 0;
+        for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
+        const rms = Math.sqrt(sum / buf.length);
+
+        if (rms > VAD_SILENCE_THRESHOLD) {
+          // Voice detected
+          silentSinceRef.current = null;
+          if (vadTimerRef.current) {
+            clearTimeout(vadTimerRef.current);
+            vadTimerRef.current = null;
+          }
+          if (vadMutedRef.current) {
+            // Unmute the track — voice is back
+            stream.getAudioTracks().forEach(t => { t.enabled = true; });
+            vadMutedRef.current = false;
+          }
+          setIsSpeaking(true);
+        } else {
+          // Silence
+          setIsSpeaking(false);
+          if (!vadMutedRef.current && silentSinceRef.current === null) {
+            silentSinceRef.current = Date.now();
+            vadTimerRef.current = setTimeout(() => {
+              // Still silent after delay → mute the track to kill background noise
+              stream.getAudioTracks().forEach(t => { t.enabled = false; });
+              vadMutedRef.current = true;
+            }, VAD_SILENCE_DELAY_MS);
+          }
+        }
+      }, VAD_POLL_MS);
+    } catch (err) {
+      console.warn("[Voice] VAD init failed:", err);
+    }
+  }
+
+  function stopVAD() {
+    if (vadIntervalRef.current) { clearInterval(vadIntervalRef.current); vadIntervalRef.current = null; }
+    if (vadTimerRef.current)    { clearTimeout(vadTimerRef.current);     vadTimerRef.current    = null; }
+    vadCtxRef.current?.close().catch(() => {});
+    vadCtxRef.current     = null;
+    vadAnalyserRef.current = null;
+    silentSinceRef.current = null;
+    vadMutedRef.current    = false;
+    setIsSpeaking(false);
+  }
+
+  // ── Init microphone ──────────────────────────────────────────────────────────
   useEffect(() => {
     if (!room || !myPlayerId || initDoneRef.current) return;
     initDoneRef.current = true;
@@ -160,6 +259,7 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
         localStreamRef.current = stream;
         setIsVoiceReady(true);
         setVoiceError(null);
+        startVAD(stream);
       })
       .catch(err => {
         if (cancelled) return;
@@ -170,23 +270,22 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
     return () => { cancelled = true; };
   }, [!!room, myPlayerId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Cleanup when leaving room ─────────────────────────────────────────────
+  // ── Cleanup on leave ────────────────────────────────────────────────────────
   useEffect(() => {
     if (room) return;
+    stopVAD();
     localStreamRef.current?.getTracks().forEach(t => t.stop());
     localStreamRef.current = null;
-    peersRef.current.forEach(({ pc, audio }) => { pc.close(); audio.srcObject = null; });
-    peersRef.current.clear();
-    iceQueueRef.current.clear();
+    for (const pid of [...peersRef.current.keys()]) destroyPeer(pid);
     pendingPlayRef.current = [];
-    initDoneRef.current = false;
+    initDoneRef.current    = false;
     setIsVoiceReady(false);
     setMutedPlayers(new Set());
     setIsMuted(false);
     isMutedRef.current = false;
   }, [room]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Manage peer mesh when players join / leave ────────────────────────────
+  // ── Peer mesh management ────────────────────────────────────────────────────
   useEffect(() => {
     const socket = socketRef.current;
     if (!socket || !room || !myPlayerId || !isVoiceReady) return;
@@ -195,16 +294,11 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
     const activeIds     = new Set(activePlayers.map(p => p.id));
 
     // Remove departed peers
-    for (const [pid, { pc, audio }] of peersRef.current) {
-      if (!activeIds.has(pid)) {
-        pc.close();
-        audio.srcObject = null;
-        peersRef.current.delete(pid);
-        iceQueueRef.current.delete(pid);
-      }
+    for (const pid of [...peersRef.current.keys()]) {
+      if (!activeIds.has(pid)) destroyPeer(pid);
     }
 
-    // Establish connections with new peers
+    // Connect to new peers
     for (const player of activePlayers) {
       if (peersRef.current.has(player.id)) continue;
 
@@ -212,7 +306,6 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
       peersRef.current.set(player.id, peer);
       iceQueueRef.current.set(player.id, []);
 
-      // Tie-break: lower ID sends offer
       const imPolite = myPlayerId < player.id;
       if (imPolite) {
         peer.makingOffer = true;
@@ -226,15 +319,12 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
               signal: { type: "offer", sdp: peer.pc.localDescription },
             });
           })
-          .catch(err => {
-            peer.makingOffer = false;
-            console.warn("[Voice] createOffer failed:", err);
-          });
+          .catch(err => { peer.makingOffer = false; console.warn("[Voice] offer failed:", err); });
       }
     }
   }, [room?.players, isVoiceReady, myPlayerId, socketRef, buildPeer]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Handle incoming signals + mute events ─────────────────────────────────
+  // ── Signal + mute event handling ────────────────────────────────────────────
   useEffect(() => {
     const socket = socketRef.current;
     if (!socket || !myPlayerId) return;
@@ -255,16 +345,13 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
 
       try {
         if (signal.type === "offer" && signal.sdp) {
-          const offerCollision =
-            peersRef.current.get(fromPlayerId)!.makingOffer ||
-            pc.signalingState !== "stable";
-
-          const imPolite = (myPlayerId ?? "") > fromPlayerId;
-          if (!imPolite && offerCollision) return;
+          const collision = peersRef.current.get(fromPlayerId)!.makingOffer ||
+                            pc.signalingState !== "stable";
+          const imPolite  = (myPlayerId ?? "") > fromPlayerId;
+          if (!imPolite && collision) return;
 
           await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
           await drainIceQueue(fromPlayerId, pc);
-
           const answer = await pc.createAnswer();
           await pc.setLocalDescription(answer);
           socketRef.current?.emit("webrtc_signal", {
@@ -288,14 +375,14 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
           }
         }
       } catch (err) {
-        console.warn("[Voice] signal handling error:", err);
+        console.warn("[Voice] signal error:", err);
       }
     }
 
     function handleMute({ playerId, isMuted: muted }: { playerId: string; isMuted: boolean }) {
       setMutedPlayers(prev => {
         const next = new Set(prev);
-        if (muted) next.add(playerId); else next.delete(playerId);
+        muted ? next.add(playerId) : next.delete(playerId);
         return next;
       });
     }
@@ -308,19 +395,25 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
     };
   }, [connected, myPlayerId, socketRef, buildPeer]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Toggle mute ───────────────────────────────────────────────────────────
+  // ── Manual mute toggle ──────────────────────────────────────────────────────
   const toggleMute = useCallback(() => {
     const stream = localStreamRef.current;
     if (!stream) return;
     const next = !isMutedRef.current;
     isMutedRef.current = next;
+    // When manually unmuting: also clear any VAD mute so track re-enables
+    if (!next && vadMutedRef.current) {
+      vadMutedRef.current = false;
+    }
     stream.getAudioTracks().forEach(t => { t.enabled = !next; });
     setIsMuted(next);
     socketRef.current?.emit("webrtc_mute", { isMuted: next });
   }, [socketRef]);
 
   return (
-    <VoiceContext.Provider value={{ isMuted, toggleMute, mutedPlayers, isVoiceReady, voiceError }}>
+    <VoiceContext.Provider value={{
+      isMuted, isSpeaking, toggleMute, mutedPlayers, isVoiceReady, voiceError,
+    }}>
       {children}
     </VoiceContext.Provider>
   );

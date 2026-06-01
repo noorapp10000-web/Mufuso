@@ -8,7 +8,7 @@ import OnlineGamePlay from "./OnlineGamePlay";
 import { Mic, MicOff, WifiOff } from "lucide-react";
 
 function FloatingMicButton() {
-  const { isMuted, toggleMute, isVoiceReady, voiceError } = useVoice();
+  const { isMuted, isSpeaking, toggleMute, isVoiceReady, voiceError } = useVoice();
 
   if (voiceError) {
     return (
@@ -25,6 +25,8 @@ function FloatingMicButton() {
 
   if (!isVoiceReady) return null;
 
+  const active = !isMuted && isSpeaking;
+
   return (
     <div className="fixed bottom-6 left-4 z-50">
       <button
@@ -32,12 +34,15 @@ function FloatingMicButton() {
         className={`relative flex items-center justify-center w-12 h-12 rounded-2xl border-2 shadow-lg transition-all active:scale-95 ${
           isMuted
             ? "bg-zinc-900 border-zinc-600 text-zinc-400"
-            : "bg-green-950/80 border-green-600/70 text-green-400"
+            : active
+            ? "bg-green-900/90 border-green-400 text-green-300"
+            : "bg-green-950/80 border-green-700/60 text-green-500"
         }`}
         aria-label={isMuted ? "فتح الميكروفون" : "كتم الميكروفون"}
       >
-        {!isMuted && (
-          <span className="absolute inset-0 rounded-2xl border-2 border-green-500/40 animate-ping" />
+        {/* Pulse ring — only when VAD detects actual voice */}
+        {active && (
+          <span className="absolute inset-0 rounded-2xl border-2 border-green-400/50 animate-ping" />
         )}
         {isMuted
           ? <MicOff className="w-5 h-5" />
@@ -46,9 +51,9 @@ function FloatingMicButton() {
       </button>
       <p className="text-center text-[10px] mt-1 font-bold" style={{
         fontFamily: "'Cairo', sans-serif",
-        color: isMuted ? "#71717a" : "#4ade80",
+        color: isMuted ? "#71717a" : active ? "#4ade80" : "#16a34a",
       }}>
-        {isMuted ? "صامت" : "مفتوح"}
+        {isMuted ? "صامت" : active ? "بيتكلم" : "مفتوح"}
       </p>
     </div>
   );
