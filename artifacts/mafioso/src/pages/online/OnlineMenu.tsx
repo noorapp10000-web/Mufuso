@@ -23,11 +23,10 @@ export default function OnlineMenu() {
     return () => clearInterval(t);
   }, [connected]);
 
-  // Navigate to room when connected
-  if (room) {
-    setLocation("/online/room");
-    return null;
-  }
+  // Navigate to room once room is established (use effect — never call setLocation during render)
+  useEffect(() => {
+    if (room) setLocation("/online/room");
+  }, [room, setLocation]);
 
   function handleCreate() {
     if (!playerName.trim()) return;

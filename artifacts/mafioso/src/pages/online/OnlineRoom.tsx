@@ -61,12 +61,15 @@ function FloatingMicButton() {
 
 function RoomContent() {
   const [, setLocation] = useLocation();
-  const { room } = useOnline();
+  const { room, reconnecting } = useOnline();
 
   useEffect(() => {
-    if (!room) setLocation("/online");
-  }, [room, setLocation]);
+    // Don't redirect while a reconnect attempt is in-flight — wait for
+    // room_joined (success) or room_error (failure, which clears room).
+    if (!room && !reconnecting) setLocation("/online");
+  }, [room, reconnecting, setLocation]);
 
+  // Show nothing while reconnecting (avoids black-screen flash)
   if (!room) return null;
 
   return (

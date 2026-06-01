@@ -69,6 +69,7 @@ export interface MyCard {
 
 interface OnlineContextType {
   connected: boolean;
+  reconnecting: boolean;
   room: OnlineRoom | null;
   myPlayerId: string | null;
   myCard: MyCard | null;
@@ -124,10 +125,12 @@ const API_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
 
 export function OnlineProvider({ children }: { children: ReactNode }) {
   const [connected, setConnected] = useState(false);
+  const [reconnecting, setReconnecting] = useState(false);
   const [room, setRoom] = useState<OnlineRoom | null>(null);
   const [myPlayerId, setMyPlayerId] = useState<string | null>(null);
   const [myCard, setMyCard] = useState<MyCard | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const reconnectingRef = useRef(false);
 
   const socketRef = useRef<Socket | null>(null);
 
@@ -147,6 +150,8 @@ export function OnlineProvider({ children }: { children: ReactNode }) {
       // Try to reconnect to an existing session
       const session = loadSession();
       if (session) {
+        reconnectingRef.current = true;
+        setReconnecting(true);
         socket.emit("reconnect_player", { code: session.code, playerId: session.playerId });
       }
     });
@@ -154,6 +159,8 @@ export function OnlineProvider({ children }: { children: ReactNode }) {
     socket.on("disconnect", () => setConnected(false));
 
     socket.on("room_created", ({ code, room: r, playerId }: { code: string; room: OnlineRoom; playerId: string }) => {
+      reconnectingRef.current = false;
+      setReconnecting(false);
       setRoom(r);
       setMyPlayerId(playerId);
       saveSession(code, playerId);
@@ -161,6 +168,8 @@ export function OnlineProvider({ children }: { children: ReactNode }) {
     });
 
     socket.on("room_joined", ({ room: r, playerId }: { room: OnlineRoom; playerId: string }) => {
+      reconnectingRef.current = false;
+      setReconnecting(false);
       setRoom(r);
       setMyPlayerId(playerId);
       saveSession(r.code, playerId);
@@ -180,6 +189,15 @@ export function OnlineProvider({ children }: { children: ReactNode }) {
     });
 
     socket.on("room_error", ({ message }: { message: string }) => {
+      // If error happened during reconnect attempt → stale session, clear everything
+      if (reconnectingRef.current) {
+        reconnectingRef.current = false;
+        setReconnecting(false);
+        clearSession();
+        setRoom(null);
+        setMyPlayerId(null);
+        setMyCard(null);
+      }
       setError(message);
     });
 
@@ -263,7 +281,7 @@ export function OnlineProvider({ children }: { children: ReactNode }) {
 
   return (
     <OnlineContext.Provider value={{
-      connected, room, myPlayerId, myCard, error, clearError, socketRef,
+      connected, reconnecting, room, myPlayerId, myCard, error, clearError, socketRef,
       createRoom, joinRoom, reconnectPlayer,
       selectCase, setDuration, startGame,
       confirmCard, startDiscuss, skipToVote,
