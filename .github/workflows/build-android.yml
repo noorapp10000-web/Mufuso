@@ -26,10 +26,11 @@ jobs:
           distribution: 'temurin'
 
       # ─── 3. Node.js ──────────────────────────────────────────────────────────
-      - name: Set up Node.js 22
+      # Node 20 LTS — sharp@0.32.x has no prebuilt binaries for Node 22
+      - name: Set up Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '20'
 
       # ─── 4. pnpm ─────────────────────────────────────────────────────────────
       - name: Set up pnpm
@@ -53,6 +54,11 @@ jobs:
         working-directory: artifacts/mafioso
         env:
           VITE_API_URL: https://seifoooo-mafioso-server.hf.space
+          # Optional: override default OpenRelay TURN with your own server
+          # Set these in GitHub → Settings → Secrets → Actions
+          VITE_TURN_URL:      ${{ secrets.VITE_TURN_URL }}
+          VITE_TURN_USERNAME: ${{ secrets.VITE_TURN_USERNAME }}
+          VITE_TURN_PASSWORD: ${{ secrets.VITE_TURN_PASSWORD }}
         run: |
           pnpm run build:apk
           ls -lh dist/public/

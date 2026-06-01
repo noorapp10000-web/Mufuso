@@ -4,11 +4,37 @@ import {
 } from "react";
 import { useOnline } from "./OnlineContext";
 
+// ── ICE / TURN config ──────────────────────────────────────────────────────────
+// STUN only works ~80% of the time. TURN relays ALL traffic through a server
+// so it works on strict 4G/corporate networks where STUN peers can't reach each other.
+//
+// Set at build time via env vars (GitHub Actions secret → VITE_TURN_*):
+//   VITE_TURN_URL      e.g. turn:openrelay.metered.ca:443
+//   VITE_TURN_USERNAME e.g. openrelayproject
+//   VITE_TURN_PASSWORD e.g. openrelayproject
+//
+// Falls back to OpenRelay (free public TURN, ~50 GB/month).
+
+const TURN_URL      = import.meta.env.VITE_TURN_URL      ?? "turn:openrelay.metered.ca:443";
+const TURN_USERNAME = import.meta.env.VITE_TURN_USERNAME  ?? "openrelayproject";
+const TURN_PASSWORD = import.meta.env.VITE_TURN_PASSWORD  ?? "openrelayproject";
+
 const ICE_SERVERS: RTCIceServer[] = [
+  // STUN — fast, no relay, works on most networks
   { urls: "stun:stun.l.google.com:19302" },
   { urls: "stun:stun1.l.google.com:19302" },
-  { urls: "stun:stun2.l.google.com:19302" },
   { urls: "stun:global.stun.twilio.com:3478" },
+  // TURN — relay fallback for strict 4G/5G/symmetric NAT
+  {
+    urls: [
+      "turn:openrelay.metered.ca:80",
+      "turn:openrelay.metered.ca:443",
+      "turn:openrelay.metered.ca:443?transport=tcp",
+      TURN_URL,
+    ],
+    username:   TURN_USERNAME,
+    credential: TURN_PASSWORD,
+  },
 ];
 
 // echoCancellation: true  → REQUIRED (not optional) — Android activates hardware AEC
