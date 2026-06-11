@@ -1,0 +1,12 @@
+node_modules
+**/node_modules
+**/dist
+**/.git
+.git
+artifacts/mafioso
+artifacts/mafioso-game
+artifacts/mockup-sandbox
+attached_assets
+.agents
+.local
+*.log
