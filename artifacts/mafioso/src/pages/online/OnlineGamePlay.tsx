@@ -2,11 +2,10 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { useOnline, SafePlayer, EliminatedRecord } from "@/context/OnlineContext";
-import { useVoice } from "@/context/VoiceContext";
 import { getCaseById } from "@/data/allCases";
 import {
   ArrowRight, Timer, Vote, Users, Shield, Skull,
-  ChevronDown, ChevronUp, CheckCircle, XCircle, Eye, Mic, MicOff,
+  ChevronDown, ChevronUp, CheckCircle, XCircle, Eye,
 } from "lucide-react";
 
 const ROUND_LABELS = ["الأولى", "الثانية", "الثالثة", "الرابعة", "الخامسة"];
@@ -38,8 +37,6 @@ export default function OnlineGamePlay() {
     room, myPlayerId, myCard,
     startDiscuss, skipToVote, castVote, nextRound, playAgain, leaveRoom,
   } = useOnline();
-  const { isMuted, isSpeaking, mutedPlayers, speakingPlayers, isVoiceReady } = useVoice();
-
   const [expandedChar, setExpandedChar] = useState<string | null>(null);
   const [showTrueStory, setShowTrueStory] = useState(false);
   const [myVote, setMyVote] = useState<string | null>(null);
@@ -271,29 +268,12 @@ export default function OnlineGamePlay() {
           <div className="p-4 rounded-2xl bg-zinc-900/50 border border-zinc-800">
             <p className="text-xs text-zinc-500 mb-3 flex items-center gap-2"><Users className="w-3 h-3" />اللاعبون المتبقون ({activePlayers.length})</p>
             <div className="flex flex-wrap gap-2">
-              {activePlayers.map(p => {
-                const playerMuted    = p.id === myPlayerId ? isMuted    : mutedPlayers.has(p.id);
-                const playerSpeaking = p.id === myPlayerId ? isSpeaking : speakingPlayers.has(p.id);
-                return (
-                  <div key={p.id} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl ${p.id === myPlayerId ? "bg-red-950/30 border border-red-900/30" : "bg-zinc-800"}`}>
-                    {/* connection dot */}
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0" />
-                    <span className="text-xs font-bold text-white" style={{ fontFamily: "'Cairo', sans-serif" }}>{p.name}</span>
-                    {isVoiceReady && (
-                      playerMuted ? (
-                        <MicOff className="w-3 h-3 text-zinc-600" />
-                      ) : playerSpeaking ? (
-                        <span className="relative flex items-center justify-center w-3 h-3">
-                          <span className="absolute inline-flex w-full h-full rounded-full bg-green-400 opacity-60 animate-ping" />
-                          <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-green-400" />
-                        </span>
-                      ) : (
-                        <Mic className="w-3 h-3 text-zinc-600" />
-                      )
-                    )}
-                  </div>
-                );
-              })}
+              {activePlayers.map(p => (
+                <div key={p.id} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl ${p.id === myPlayerId ? "bg-red-950/30 border border-red-900/30" : "bg-zinc-800"}`}>
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0" />
+                  <span className="text-xs font-bold text-white" style={{ fontFamily: "'Cairo', sans-serif" }}>{p.name}</span>
+                </div>
+              ))}
               {gs.eliminatedRecords.map(e => (
                 <div key={e.playerId} className="flex items-center gap-1.5 bg-zinc-800/40 px-3 py-1.5 rounded-xl">
                   <div className="w-1.5 h-1.5 rounded-full bg-red-700" />

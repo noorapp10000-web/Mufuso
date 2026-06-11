@@ -1,106 +1,18 @@
-import { useEffect, Component, ReactNode } from "react";
+import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { useOnline } from "@/context/OnlineContext";
-import { VoiceProvider, useVoice } from "@/context/VoiceContext";
 import OnlineLobby from "./OnlineLobby";
 import OnlineCardDraw from "./OnlineCardDraw";
 import OnlineGamePlay from "./OnlineGamePlay";
-import { Mic, MicOff, WifiOff } from "lucide-react";
-
-// ── Error Boundary ─────────────────────────────────────────────────────────────
-// Catches crashes in VoiceProvider / WebRTC / AudioContext so the screen
-// doesn't go black. Shows a graceful fallback and keeps the game visible.
-class VoiceErrorBoundary extends Component<
-  { children: ReactNode },
-  { crashed: boolean }
-> {
-  state = { crashed: false };
-  static getDerivedStateFromError() { return { crashed: true }; }
-  componentDidCatch(err: unknown) {
-    console.error("[VoiceProvider] crashed — voice disabled:", err);
-  }
-  render() {
-    if (this.state.crashed) {
-      // Render children WITHOUT voice — game continues, mic just disabled
-      return (
-        <>
-          {this.props.children}
-          <div className="fixed bottom-6 left-4 z-50 flex items-center gap-2 px-3 py-2 rounded-2xl bg-zinc-900/90 border border-zinc-700">
-            <WifiOff className="w-4 h-4 text-zinc-500" />
-            <span className="text-xs text-zinc-500" style={{ fontFamily: "'Cairo', sans-serif" }}>
-              الصوت غير متاح
-            </span>
-          </div>
-        </>
-      );
-    }
-    return this.props.children;
-  }
-}
-
-function FloatingMicButton() {
-  const { isMuted, isSpeaking, toggleMute, isVoiceReady, voiceError } = useVoice();
-
-  if (voiceError) {
-    return (
-      <div className="fixed bottom-6 left-4 z-50">
-        <div className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-zinc-900/90 border border-zinc-700 backdrop-blur-sm">
-          <WifiOff className="w-4 h-4 text-zinc-500" />
-          <span className="text-xs text-zinc-500" style={{ fontFamily: "'Cairo', sans-serif" }}>
-            لا يوجد ميكروفون
-          </span>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isVoiceReady) return null;
-
-  const active = !isMuted && isSpeaking;
-
-  return (
-    <div className="fixed bottom-6 left-4 z-50">
-      <button
-        onClick={toggleMute}
-        className={`relative flex items-center justify-center w-12 h-12 rounded-2xl border-2 shadow-lg transition-all active:scale-95 ${
-          isMuted
-            ? "bg-zinc-900 border-zinc-600 text-zinc-400"
-            : active
-            ? "bg-green-900/90 border-green-400 text-green-300"
-            : "bg-green-950/80 border-green-700/60 text-green-500"
-        }`}
-        aria-label={isMuted ? "فتح الميكروفون" : "كتم الميكروفون"}
-      >
-        {/* Pulse ring — only when VAD detects actual voice */}
-        {active && (
-          <span className="absolute inset-0 rounded-2xl border-2 border-green-400/50 animate-ping" />
-        )}
-        {isMuted
-          ? <MicOff className="w-5 h-5" />
-          : <Mic className="w-5 h-5" />
-        }
-      </button>
-      <p className="text-center text-[10px] mt-1 font-bold" style={{
-        fontFamily: "'Cairo', sans-serif",
-        color: isMuted ? "#71717a" : active ? "#4ade80" : "#16a34a",
-      }}>
-        {isMuted ? "صامت" : active ? "بيتكلم" : "مفتوح"}
-      </p>
-    </div>
-  );
-}
 
 function RoomContent() {
   const [, setLocation] = useLocation();
   const { room, reconnecting } = useOnline();
 
   useEffect(() => {
-    // Don't redirect while a reconnect attempt is in-flight — wait for
-    // room_joined (success) or room_error (failure, which clears room).
     if (!room && !reconnecting) setLocation("/online");
   }, [room, reconnecting, setLocation]);
 
-  // Show nothing while reconnecting (avoids black-screen flash)
   if (!room) return null;
 
   return (
@@ -108,17 +20,10 @@ function RoomContent() {
       {room.status === "waiting" && <OnlineLobby />}
       {room.status === "card_draw" && <OnlineCardDraw />}
       {(room.status === "playing" || room.status === "game_over") && <OnlineGamePlay />}
-      <FloatingMicButton />
     </>
   );
 }
 
 export default function OnlineRoom() {
-  return (
-    <VoiceErrorBoundary>
-      <VoiceProvider>
-        <RoomContent />
-      </VoiceProvider>
-    </VoiceErrorBoundary>
-  );
+  return <RoomContent />;
 }

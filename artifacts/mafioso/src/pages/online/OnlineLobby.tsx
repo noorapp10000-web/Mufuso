@@ -2,9 +2,8 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { useOnline, CaseMeta } from "@/context/OnlineContext";
-import { useVoice } from "@/context/VoiceContext";
 import { ALL_CASES } from "@/data/allCases";
-import { ArrowRight, Copy, Check, Users, Play, Settings2, Minus, Plus, AlertCircle, X, UserX, ChevronDown, ChevronUp, Mic, MicOff } from "lucide-react";
+import { ArrowRight, Copy, Check, Users, Play, Settings2, Minus, Plus, AlertCircle, X, UserX, ChevronDown, ChevronUp } from "lucide-react";
 
 export default function OnlineLobby() {
   const [, setLocation] = useLocation();
@@ -12,8 +11,6 @@ export default function OnlineLobby() {
     room, myPlayerId, error, clearError,
     selectCase, setDuration, startGame, kickPlayer, leaveRoom,
   } = useOnline();
-  const { isMuted, isSpeaking, mutedPlayers, speakingPlayers, isVoiceReady } = useVoice();
-
   const [codeCopied, setCodeCopied] = useState(false);
   const [showCaseList, setShowCaseList] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -144,22 +141,6 @@ export default function OnlineLobby() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {isVoiceReady && (() => {
-                    const playerMuted   = player.id === myPlayerId ? isMuted   : mutedPlayers.has(player.id);
-                    const playerSpeaking = player.id === myPlayerId ? isSpeaking : speakingPlayers.has(player.id);
-                    if (playerMuted) {
-                      return <MicOff className="w-3.5 h-3.5 text-zinc-600" />;
-                    }
-                    if (playerSpeaking) {
-                      return (
-                        <span className="relative flex items-center justify-center w-3.5 h-3.5">
-                          <span className="absolute inline-flex w-full h-full rounded-full bg-green-400 opacity-60 animate-ping" />
-                          <span className="relative inline-flex w-2 h-2 rounded-full bg-green-400" />
-                        </span>
-                      );
-                    }
-                    return <Mic className="w-3.5 h-3.5 text-zinc-500" />;
-                  })()}
                   <div className={`w-2 h-2 rounded-full ${player.isConnected ? "bg-green-500" : "bg-red-600"}`} />
                   {isHost && player.id !== myPlayerId && (
                     <button

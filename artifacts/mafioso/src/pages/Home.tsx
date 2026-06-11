@@ -220,10 +220,6 @@ export default function Home() {
             >
               سيف كامل
             </p>
-            <div className="w-10 h-px bg-red-900/50 mx-auto" />
-            <p className="text-zinc-500 text-xs leading-relaxed" style={{ fontFamily: "'Cairo', sans-serif" }}>
-              صدقة جارية على روح جدي وجدتي رحمهما الله
-            </p>
           </div>
         </motion.div>
 
