@@ -44,8 +44,7 @@ jobs:
         working-directory: artifacts/mafioso
         run: npx cap sync android
 
-      # ─── Icons + Splash (ALL Android versions) ───────────────────────────────
-      # Must run AFTER cap sync so custom assets are never overwritten by Capacitor
+      # Icons + Splash — MUST run AFTER cap sync so Capacitor never overwrites them
       - name: Install ImageMagick
         run: sudo apt-get install -y imagemagick
 
@@ -60,10 +59,10 @@ jobs:
             echo "ERROR: Icon not found at $ICON" && exit 1
           fi
 
-          # ── Remove any XML adaptive-icon files that override our PNGs ──
+          # Remove any XML adaptive-icon files that would override our PNGs
           find "${RES}" -name "ic_launcher*.xml" -delete 2>/dev/null || true
 
-          # ── App Icons (all mipmap densities) ──────────────────────────────
+          # App Icons — all mipmap densities
           gen_icon() {
             local DIR=$1 SIZE=$2
             mkdir -p "${RES}/${DIR}"
@@ -77,31 +76,31 @@ jobs:
           gen_icon mipmap-xxhdpi   144
           gen_icon mipmap-xxxhdpi  192
 
-          # ── Adaptive icon for Android 8+ (API 26+) ────────────────────────
+          # Adaptive icon — Android 8+ (API 26+)
           mkdir -p "${RES}/drawable" "${RES}/mipmap-anydpi-v26"
           convert "$ICON" -resize 432x432 -background "$BG" \
             -gravity center -extent 512x512 "${RES}/drawable/ic_launcher_foreground.png"
 
-          cat > "${RES}/mipmap-anydpi-v26/ic_launcher.xml" <<'EOF'
-<?xml version="1.0" encoding="utf-8"?>
-<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-    <background android:drawable="@color/ic_launcher_background"/>
-    <foreground android:drawable="@drawable/ic_launcher_foreground"/>
-</adaptive-icon>
-EOF
+          printf '%s\n' \
+            '<?xml version="1.0" encoding="utf-8"?>' \
+            '<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">' \
+            '    <background android:drawable="@color/ic_launcher_background"/>' \
+            '    <foreground android:drawable="@drawable/ic_launcher_foreground"/>' \
+            '</adaptive-icon>' \
+            > "${RES}/mipmap-anydpi-v26/ic_launcher.xml"
           cp "${RES}/mipmap-anydpi-v26/ic_launcher.xml" \
              "${RES}/mipmap-anydpi-v26/ic_launcher_round.xml"
 
           mkdir -p "${RES}/values"
-          cat > "${RES}/values/ic_launcher_background.xml" <<'EOF'
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <color name="ic_launcher_background">#0d0d0d</color>
-</resources>
-EOF
+          printf '%s\n' \
+            '<?xml version="1.0" encoding="utf-8"?>' \
+            '<resources>' \
+            '    <color name="ic_launcher_background">#0d0d0d</color>' \
+            '</resources>' \
+            > "${RES}/values/ic_launcher_background.xml"
 
-          # ── Splash screens (portrait + landscape, all densities) ──────────
-          # Android 5-11: uses drawable-port-*/drawable-land-* PNG files
+          # Splash screens — portrait + landscape, all densities
+          # Android 5-11: Capacitor SplashScreen reads drawable-port-*/drawable-land-*
           gen_splash() {
             local DIR=$1 W=$2 H=$3 ICON_SIZE=$4
             mkdir -p "${RES}/${DIR}"
@@ -122,38 +121,34 @@ EOF
           gen_splash drawable-land-xxhdpi   1920 1080 540
           gen_splash drawable-land-xxxhdpi  2560 1440 720
 
-          # Default fallback splash
-          gen_splash drawable                1080 1920 540
+          gen_splash drawable               1080 1920 540
 
-          # ── Android 12+ (API 31+) splash icon ────────────────────────────
-          # windowSplashScreenAnimatedIcon must be a 512×512 or smaller icon
-          convert "$ICON" -resize 512x512 -background "$BG" \
+          # Android 12+ (API 31+) — splash icon, transparent bg, max 512x512
+          convert "$ICON" -resize 512x512 -background none \
             -gravity center -extent 512x512 "${RES}/drawable/splash_icon.png"
 
-          mkdir -p "${RES}/values/splash_colors.xml" || true
-          cat > "${RES}/values/splash_colors.xml" <<'EOF'
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <color name="splash_background">#0d0d0d</color>
-</resources>
-EOF
+          printf '%s\n' \
+            '<?xml version="1.0" encoding="utf-8"?>' \
+            '<resources>' \
+            '    <color name="splash_background">#0d0d0d</color>' \
+            '</resources>' \
+            > "${RES}/values/splash_colors.xml"
 
           mkdir -p "${RES}/values-v31"
-          cat > "${RES}/values-v31/splash_styles.xml" <<'EOF'
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">#0d0d0d</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
-        <item name="windowSplashScreenIconBackgroundColor">#0d0d0d</item>
-        <item name="postSplashScreenTheme">@style/AppTheme</item>
-    </style>
-</resources>
-EOF
+          printf '%s\n' \
+            '<?xml version="1.0" encoding="utf-8"?>' \
+            '<resources>' \
+            '    <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">' \
+            '        <item name="windowSplashScreenBackground">#0d0d0d</item>' \
+            '        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>' \
+            '        <item name="windowSplashScreenIconBackgroundColor">#0d0d0d</item>' \
+            '        <item name="postSplashScreenTheme">@style/AppTheme</item>' \
+            '    </style>' \
+            '</resources>' \
+            > "${RES}/values-v31/splash_styles.xml"
 
-          echo "✅ Icons + splash generated for all Android versions"
+          echo "Icons + splash generated for all Android versions"
 
-      # ─── Build APK ───────────────────────────────────────────────────────────
       - name: Build Debug APK
         working-directory: artifacts/mafioso/android
         run: |
