@@ -690,6 +690,66 @@ uri = "file://artifacts/mafioso/public/character-images/case_05_char_4.png"
 type = "image"
 title = "لمياء الفنانة"
 
+[[generated]]
+id = "m32EAjpi8YHd662m1cCxU"
+uri = "file://artifacts/mafioso/public/character-images/case_06_char_1.png"
+type = "image"
+title = "جاد المنافس"
+
+[[generated]]
+id = "zun8_2qth1PljY06Bf5iO"
+uri = "file://artifacts/mafioso/public/character-images/case_06_char_2.png"
+type = "image"
+title = "ريم الطاهية"
+
+[[generated]]
+id = "03V4H3zmEAigZvJDltrer"
+uri = "file://artifacts/mafioso/public/character-images/case_06_char_3.png"
+type = "image"
+title = "صلاح رئيس الصالة"
+
+[[generated]]
+id = "MjjHDefMdfac6JnLbcfgH"
+uri = "file://artifacts/mafioso/public/character-images/case_06_char_4.png"
+type = "image"
+title = "غادة الموردة"
+
+[[generated]]
+id = "jkvHouGBq4C0B3OvG9Vty"
+uri = "file://artifacts/mafioso/public/character-images/case_07_char_1.png"
+type = "image"
+title = "نبيل المبرمج"
+
+[[generated]]
+id = "AQ8UysKgNDUtg6PvjcJCZ"
+uri = "file://artifacts/mafioso/public/character-images/case_07_char_2.png"
+type = "image"
+title = "ليلى المنافسة"
+
+[[generated]]
+id = "1Y5SGeQEmYBMxOV3gITqC"
+uri = "file://artifacts/mafioso/public/character-images/case_07_char_3.png"
+type = "image"
+title = "كريم مهندس الشبكات"
+
+[[generated]]
+id = "eWUZTkm1PDx5RDrcK78Ga"
+uri = "file://artifacts/mafioso/public/character-images/case_07_char_4.png"
+type = "image"
+title = "سارة مديرة المشروع"
+
+[[generated]]
+id = "IWAD7uc1zHbB3NvSvZXzJ"
+uri = "file://artifacts/mafioso/public/character-images/case_08_char_1.png"
+type = "image"
+title = "حكيم الحاج"
+
+[[generated]]
+id = "GCX85A4GWMbFPfViGe3dS"
+uri = "file://artifacts/mafioso/public/character-images/case_08_char_2.png"
+type = "image"
+title = "أمل الطبيبة"
+
 [[outputs]]
 id = "VbYA6GJrIiE0kDruUmuuW"
 uri = "file://artifacts/mafioso/public/bg_street_1.png"
