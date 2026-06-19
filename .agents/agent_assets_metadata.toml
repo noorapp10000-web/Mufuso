@@ -1410,6 +1410,66 @@ uri = "file://artifacts/mafioso/public/character-images/case5p_11_char_2.png"
 type = "image"
 title = "منير العقاد صاحب الشركة"
 
+[[generated]]
+id = "ZO7KKumcuz4hv9AfLz_Ym"
+uri = "file://artifacts/mafioso/public/character-images/case5p_11_char_3.png"
+type = "image"
+title = "نظير الموظف الحكومي"
+
+[[generated]]
+id = "LF0YgyarskuwIH2qwb74i"
+uri = "file://artifacts/mafioso/public/character-images/case5p_11_char_4.png"
+type = "image"
+title = "دينا المراجعة القانونية"
+
+[[generated]]
+id = "9NZc3Jpk1q-ag6gOMDHP9"
+uri = "file://artifacts/mafioso/public/character-images/case5p_11_char_5.png"
+type = "image"
+title = "هشام مفتش الجودة المستقل"
+
+[[generated]]
+id = "vWnMs_FGI-_H6zb4eHLAJ"
+uri = "file://artifacts/mafioso/public/character-images/case5p_12_char_1.png"
+type = "image"
+title = "السفير يوسف كبير الدبلوماسيين"
+
+[[generated]]
+id = "dqlt8IL1cCA0pcoYg_PBH"
+uri = "file://artifacts/mafioso/public/character-images/case5p_12_char_2.png"
+type = "image"
+title = "لارا مديرة الوثائق السرية"
+
+[[generated]]
+id = "s3pRUKYws3hqjgI3a5zV-"
+uri = "file://artifacts/mafioso/public/character-images/case5p_12_char_3.png"
+type = "image"
+title = "حازم المستشار القانوني"
+
+[[generated]]
+id = "GPOwhB4tNLGrgqUWAVW7R"
+uri = "file://artifacts/mafioso/public/character-images/case5p_12_char_4.png"
+type = "image"
+title = "مي المترجمة الرسمية"
+
+[[generated]]
+id = "oZac7Fcox1yfMLGP1vy5h"
+uri = "file://artifacts/mafioso/public/character-images/case5p_12_char_5.png"
+type = "image"
+title = "ضابط رضا أمن المعهد"
+
+[[generated]]
+id = "MIzUs-sCvuKfZkQ_27dpt"
+uri = "file://artifacts/mafioso/public/character-images/case5p_13_char_1.png"
+type = "image"
+title = "تامر كاتبه الخاص"
+
+[[generated]]
+id = "PLS3fJDeQ9pDxpun-Y3un"
+uri = "file://artifacts/mafioso/public/character-images/case5p_13_char_2.png"
+type = "image"
+title = "سناء الصحفية المحققة"
+
 [[outputs]]
 id = "VbYA6GJrIiE0kDruUmuuW"
 uri = "file://artifacts/mafioso/public/bg_street_1.png"
