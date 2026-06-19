@@ -26,7 +26,6 @@ jobs:
           distribution: 'temurin'
 
       # ─── 3. Node.js ──────────────────────────────────────────────────────────
-      # Node 20 LTS — sharp@0.32.x has no prebuilt binaries for Node 22
       - name: Set up Node.js 20
         uses: actions/setup-node@v4
         with:
@@ -54,8 +53,6 @@ jobs:
         working-directory: artifacts/mafioso
         env:
           VITE_API_URL: https://seifoooo-mafioso-server.hf.space
-          # Optional: override default OpenRelay TURN with your own server
-          # Set these in GitHub → Settings → Secrets → Actions
           VITE_TURN_URL:      ${{ secrets.VITE_TURN_URL }}
           VITE_TURN_USERNAME: ${{ secrets.VITE_TURN_USERNAME }}
           VITE_TURN_PASSWORD: ${{ secrets.VITE_TURN_PASSWORD }}
@@ -76,122 +73,116 @@ jobs:
         working-directory: artifacts/mafioso
         run: pnpm exec cap sync android 2>&1
 
-      # ─── 9. Microphone permissions (AFTER sync so they are never overwritten) ─
-      - name: Add microphone permissions to AndroidManifest
-        working-directory: artifacts/mafioso
-        run: |
-          MANIFEST="android/app/src/main/AndroidManifest.xml"
-          for PERM in "android.permission.RECORD_AUDIO" "android.permission.MODIFY_AUDIO_SETTINGS"; do
-            if ! grep -q "$PERM" "$MANIFEST"; then
-              sed -i "s|<uses-permission android:name=\"android.permission.INTERNET\"|<uses-permission android:name=\"$PERM\" />\n    <uses-permission android:name=\"android.permission.INTERNET\"|" "$MANIFEST"
-              echo "  Added: $PERM"
-            else
-              echo "  Already present: $PERM"
-            fi
-          done
-          grep "uses-permission" "$MANIFEST"
-
-      # ─── 10. Patch MainActivity — request mic at runtime (Android 6+) ─────────
-      # Using base64 to avoid << heredoc conflicting with YAML parser
-      - name: Patch MainActivity for microphone runtime permission
-        working-directory: artifacts/mafioso
-        run: |
-          MAIN="android/app/src/main/java/com/mafioso/game/MainActivity.java"
-          echo "cGFja2FnZSBjb20ubWFmaW9zby5nYW1lOwoKaW1wb3J0IGFuZHJvaWQuTWFuaWZlc3Q7CmltcG9ydCBhbmRyb2lkLmNvbnRlbnQucG0uUGFja2FnZU1hbmFnZXI7CmltcG9ydCBhbmRyb2lkLm9zLkJ1bmRsZTsKaW1wb3J0IGFuZHJvaWQud2Via2l0LlBlcm1pc3Npb25SZXF1ZXN0OwppbXBvcnQgYW5kcm9pZHguY29yZS5hcHAuQWN0aXZpdHlDb21wYXQ7CmltcG9ydCBhbmRyb2lkeC5jb3JlLmNvbnRlbnQuQ29udGV4dENvbXBhdDsKaW1wb3J0IGNvbS5nZXRjYXBhY2l0b3IuQnJpZGdlQWN0aXZpdHk7CgpwdWJsaWMgY2xhc3MgTWFpbkFjdGl2aXR5IGV4dGVuZHMgQnJpZGdlQWN0aXZpdHkgewogICAgcHJpdmF0ZSBzdGF0aWMgZmluYWwgaW50IE1JQ19QRVJNSVNTSU9OX0NPREUgPSAxMDA7CgogICAgQE92ZXJyaWRlCiAgICBwdWJsaWMgdm9pZCBvbkNyZWF0ZShCdW5kbGUgc2F2ZWRJbnN0YW5jZVN0YXRlKSB7CiAgICAgICAgc3VwZXIub25DcmVhdGUoc2F2ZWRJbnN0YW5jZVN0YXRlKTsKICAgICAgICAvLyBSZXF1ZXN0IG1pY3JvcGhvbmUgcGVybWlzc2lvbiBhdCBydW50aW1lIChyZXF1aXJlZCBBbmRyb2lkIDYrKQogICAgICAgIGlmIChDb250ZXh0Q29tcGF0LmNoZWNrU2VsZlBlcm1pc3Npb24odGhpcywgTWFuaWZlc3QucGVybWlzc2lvbi5SRUNPUkRfQVVESU8pCiAgICAgICAgICAgICAgICAhPSBQYWNrYWdlTWFuYWdlci5QRVJNSVNTSU9OX0dSQU5URUQpIHsKICAgICAgICAgICAgQWN0aXZpdHlDb21wYXQucmVxdWVzdFBlcm1pc3Npb25zKHRoaXMsCiAgICAgICAgICAgICAgICBuZXcgU3RyaW5nW117CiAgICAgICAgICAgICAgICAgICAgTWFuaWZlc3QucGVybWlzc2lvbi5SRUNPUkRfQVVESU8sCiAgICAgICAgICAgICAgICAgICAgTWFuaWZlc3QucGVybWlzc2lvbi5NT0RJRllfQVVESU9fU0VUVElOR1MKICAgICAgICAgICAgICAgIH0sCiAgICAgICAgICAgICAgICBNSUNfUEVSTUlTU0lPTl9DT0RFKTsKICAgICAgICB9CiAgICB9Cn0K" | base64 -d > "$MAIN"
-          echo "  MainActivity patched — contents:"
-          cat "$MAIN"
-
-      # ─── 11. ImageMagick ──────────────────────────────────────────────────────
+      # ─── 9. ImageMagick ───────────────────────────────────────────────────────
       - name: Install ImageMagick
         run: sudo apt-get install -y imagemagick
 
-      # ─── 12. Icons + Splash ───────────────────────────────────────────────────
+      # ─── 10. Icons + Splash (ALL Android versions) ────────────────────────────
+      # MUST run AFTER cap sync so custom assets are never overwritten by Capacitor
       - name: Generate icons and splash screen
         working-directory: artifacts/mafioso
         run: |
-          ICON_SRC="resources/icon.png"
+          ICON="resources/icon.png"
           RES="android/app/src/main/res"
+          BG="#0d0d0d"
 
-          if [ ! -f "$ICON_SRC" ]; then
-            echo "ERROR: Icon not found at $ICON_SRC"
-            exit 1
+          if [ ! -f "$ICON" ]; then
+            echo "ERROR: Icon not found at $ICON" && exit 1
           fi
 
-          find "${RES}" -name "ic_launcher*.xml" -delete
-          find "${RES}" -name "ic_launcher_foreground.xml" -delete
-          find "${RES}" -name "ic_launcher_background.xml" -delete
+          # ── Remove any XML adaptive-icon files that override our PNGs ──────
+          find "${RES}" -name "ic_launcher*.xml" -delete 2>/dev/null || true
 
-          generate_icon() {
+          # ── App Icons (all mipmap densities) ────────────────────────────────
+          gen_icon() {
             local DIR=$1 SIZE=$2
             mkdir -p "${RES}/${DIR}"
-            convert "$ICON_SRC" -resize "${SIZE}x${SIZE}^" -gravity center -extent "${SIZE}x${SIZE}" "${RES}/${DIR}/ic_launcher.png"
-            convert "$ICON_SRC" -resize "${SIZE}x${SIZE}^" -gravity center -extent "${SIZE}x${SIZE}" "${RES}/${DIR}/ic_launcher_round.png"
+            convert "$ICON" -resize "${SIZE}x${SIZE}^" -gravity center \
+              -extent "${SIZE}x${SIZE}" "${RES}/${DIR}/ic_launcher.png"
+            cp "${RES}/${DIR}/ic_launcher.png" "${RES}/${DIR}/ic_launcher_round.png"
           }
+          gen_icon mipmap-mdpi     48
+          gen_icon mipmap-hdpi     72
+          gen_icon mipmap-xhdpi    96
+          gen_icon mipmap-xxhdpi   144
+          gen_icon mipmap-xxxhdpi  192
 
-          generate_icon mipmap-mdpi    48
-          generate_icon mipmap-hdpi    72
-          generate_icon mipmap-xhdpi   96
-          generate_icon mipmap-xxhdpi  144
-          generate_icon mipmap-xxxhdpi 192
-
+          # ── Adaptive icon for Android 8+ (API 26+) ──────────────────────────
           mkdir -p "${RES}/drawable" "${RES}/mipmap-anydpi-v26"
-          convert "$ICON_SRC" -resize 432x432^ -gravity center -extent 432x432 \
-            -background '#0d0d0d' -gravity center -extent 512x512 \
-            "${RES}/drawable/ic_launcher_foreground.png"
+          convert "$ICON" -resize 432x432 -background "$BG" \
+            -gravity center -extent 512x512 "${RES}/drawable/ic_launcher_foreground.png"
 
-          printf '%s\n' \
-            '<?xml version="1.0" encoding="utf-8"?>' \
-            '<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">' \
-            '    <background android:drawable="@color/ic_launcher_background"/>' \
-            '    <foreground android:drawable="@drawable/ic_launcher_foreground"/>' \
-            '</adaptive-icon>' \
-            > "${RES}/mipmap-anydpi-v26/ic_launcher.xml"
-          cp "${RES}/mipmap-anydpi-v26/ic_launcher.xml" "${RES}/mipmap-anydpi-v26/ic_launcher_round.xml"
+          cat > "${RES}/mipmap-anydpi-v26/ic_launcher.xml" <<'EOF'
+<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/ic_launcher_background"/>
+    <foreground android:drawable="@drawable/ic_launcher_foreground"/>
+</adaptive-icon>
+EOF
+          cp "${RES}/mipmap-anydpi-v26/ic_launcher.xml" \
+             "${RES}/mipmap-anydpi-v26/ic_launcher_round.xml"
 
           mkdir -p "${RES}/values"
-          printf '%s\n' \
-            '<?xml version="1.0" encoding="utf-8"?>' \
-            '<resources>' \
-            '    <color name="ic_launcher_background">#0d0d0d</color>' \
-            '</resources>' \
-            > "${RES}/values/ic_launcher_background.xml"
+          cat > "${RES}/values/ic_launcher_background.xml" <<'EOF'
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ic_launcher_background">#0d0d0d</color>
+</resources>
+EOF
 
-          mkdir -p "${RES}/drawable" "${RES}/drawable-land"
-          convert -size 1080x1920 xc:'#8B0000' \
-            \( "$ICON_SRC" -resize 500x500 \) \
-            -gravity center -composite "${RES}/drawable/splash.png"
+          # ── Splash screens (portrait + landscape, all densities) ────────────
+          # Android 5–11: Capacitor SplashScreen plugin reads drawable-port-*/drawable-land-*
+          gen_splash() {
+            local DIR=$1 W=$2 H=$3 ICON_SIZE=$4
+            mkdir -p "${RES}/${DIR}"
+            convert -size "${W}x${H}" "xc:${BG}" \
+              \( "$ICON" -resize "${ICON_SIZE}x${ICON_SIZE}" \) \
+              -gravity center -composite "${RES}/${DIR}/splash.png"
+          }
 
-          convert -size 1920x1080 xc:'#8B0000' \
-            \( "$ICON_SRC" -resize 400x400 \) \
-            -gravity center -composite "${RES}/drawable-land/splash.png"
+          gen_splash drawable-port-mdpi     320  480  160
+          gen_splash drawable-port-hdpi     480  800  240
+          gen_splash drawable-port-xhdpi    720  1280 360
+          gen_splash drawable-port-xxhdpi   1080 1920 540
+          gen_splash drawable-port-xxxhdpi  1440 2560 720
 
-          convert -size 512x512 xc:'#8B0000' \
-            \( "$ICON_SRC" -resize 360x360 \) \
-            -gravity center -composite "${RES}/drawable/splash_icon.png"
+          gen_splash drawable-land-mdpi     480  320  160
+          gen_splash drawable-land-hdpi     800  480  240
+          gen_splash drawable-land-xhdpi    1280 720  360
+          gen_splash drawable-land-xxhdpi   1920 1080 540
+          gen_splash drawable-land-xxxhdpi  2560 1440 720
 
-          printf '%s\n' \
-            '<?xml version="1.0" encoding="utf-8"?>' \
-            '<resources>' \
-            '    <color name="splash_background">#8B0000</color>' \
-            '</resources>' \
-            > "${RES}/values/splash_colors.xml"
+          # Default fallback splash
+          gen_splash drawable               1080 1920 540
+
+          # ── Android 12+ (API 31+) SplashScreen API icon ─────────────────────
+          # windowSplashScreenAnimatedIcon: must be ≤512×512, transparent bg
+          convert "$ICON" -resize 512x512 -background none \
+            -gravity center -extent 512x512 "${RES}/drawable/splash_icon.png"
+
+          cat > "${RES}/values/splash_colors.xml" <<'EOF'
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="splash_background">#0d0d0d</color>
+</resources>
+EOF
 
           mkdir -p "${RES}/values-v31"
-          printf '%s\n' \
-            '<?xml version="1.0" encoding="utf-8"?>' \
-            '<resources>' \
-            '    <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">' \
-            '        <item name="windowSplashScreenBackground">#8B0000</item>' \
-            '        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>' \
-            '        <item name="windowSplashScreenIconBackgroundColor">#8B0000</item>' \
-            '        <item name="postSplashScreenTheme">@style/AppTheme</item>' \
-            '    </style>' \
-            '</resources>' \
-            > "${RES}/values-v31/splash_styles.xml"
+          cat > "${RES}/values-v31/splash_styles.xml" <<'EOF'
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#0d0d0d</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
+        <item name="windowSplashScreenIconBackgroundColor">#0d0d0d</item>
+        <item name="postSplashScreenTheme">@style/AppTheme</item>
+    </style>
+</resources>
+EOF
 
-          echo "Icons + splash done"
+          echo "✅ Icons + splash generated for all Android versions"
 
-      # ─── 13. Gradle build ─────────────────────────────────────────────────────
+      # ─── 11. Gradle build ─────────────────────────────────────────────────────
       - name: Make gradlew executable
         run: chmod +x artifacts/mafioso/android/gradlew
 
@@ -210,7 +201,7 @@ jobs:
           ./gradlew assembleDebug --info --stacktrace --no-daemon 2>&1 | tee ../build.log
           exit ${PIPESTATUS[0]}
 
-      # ─── 14. Upload artifacts ─────────────────────────────────────────────────
+      # ─── 12. Upload artifacts ─────────────────────────────────────────────────
       - name: Rename and stage APK
         if: success()
         working-directory: artifacts/mafioso
