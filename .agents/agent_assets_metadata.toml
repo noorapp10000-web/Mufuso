@@ -870,6 +870,66 @@ uri = "file://artifacts/mafioso/public/character-images/case_13_char_2.png"
 type = "image"
 title = "لطيفة الزوجة"
 
+[[generated]]
+id = "RcYy0JZqaai2A85ZhEqFG"
+uri = "file://artifacts/mafioso/public/character-images/case_13_char_3.png"
+type = "image"
+title = "عبدالله الجار"
+
+[[generated]]
+id = "ocQGIKYhrBZmBP97xDJXk"
+uri = "file://artifacts/mafioso/public/character-images/case_13_char_4.png"
+type = "image"
+title = "ياسمين عاملة المزرعة"
+
+[[generated]]
+id = "5I5TpRxtj7btX1ltgfpNj"
+uri = "file://artifacts/mafioso/public/character-images/case_14_char_1.png"
+type = "image"
+title = "نجيب صاحب المزاد"
+
+[[generated]]
+id = "cT2WCpypot0VMZn4MH4zZ"
+uri = "file://artifacts/mafioso/public/character-images/case_14_char_2.png"
+type = "image"
+title = "ضياء الفنان المزيف"
+
+[[generated]]
+id = "Rfs7qUwZb55poEsHT4cd1"
+uri = "file://artifacts/mafioso/public/character-images/case_14_char_3.png"
+type = "image"
+title = "حنان وارثة اللوحة"
+
+[[generated]]
+id = "yXjU6LaFADcI-PsvJOLHz"
+uri = "file://artifacts/mafioso/public/character-images/case_14_char_4.png"
+type = "image"
+title = "بدر خبير الفنون"
+
+[[generated]]
+id = "ThKmVOQ6ojywI75Vprep_"
+uri = "file://artifacts/mafioso/public/character-images/case_15_char_1.png"
+type = "image"
+title = "سعيد ربان اليخت"
+
+[[generated]]
+id = "HlelywEIuzDROIVkzm4PW"
+uri = "file://artifacts/mafioso/public/character-images/case_15_char_2.png"
+type = "image"
+title = "زيد الصديق القديم"
+
+[[generated]]
+id = "77q555bvyAc7VogoqQDpu"
+uri = "file://artifacts/mafioso/public/character-images/case_15_char_3.png"
+type = "image"
+title = "ريتا العشيقة السرية"
+
+[[generated]]
+id = "iJreP8mR93IADLuNABoRe"
+uri = "file://artifacts/mafioso/public/character-images/case_15_char_4.png"
+type = "image"
+title = "أيمن الحارس الشخصي"
+
 [[outputs]]
 id = "VbYA6GJrIiE0kDruUmuuW"
 uri = "file://artifacts/mafioso/public/bg_street_1.png"
