@@ -15,6 +15,7 @@ export default function CardDraw() {
   const [cardFlipped, setCardFlipped] = useState(false);
   const [cardVisible, setCardVisible] = useState(false);
   const [allDone, setAllDone] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   if (!caseData || gameState.players.length === 0) {
     setLocation("/cases");
@@ -24,6 +25,8 @@ export default function CardDraw() {
   const currentPlayer = gameState.players[currentPlayerIndex];
   const character = caseData.characters.find(c => c.id === currentPlayer.characterId);
 
+  const charImageSrc = character ? `/character-images/${caseId}_${character.id}.png` : null;
+
   const handleFlipCard = () => {
     setCardFlipped(true);
     setCardVisible(true);
@@ -32,6 +35,7 @@ export default function CardDraw() {
   const handleHideAndNext = () => {
     setCardVisible(false);
     setCardFlipped(false);
+    setImgError(false);
     setTimeout(() => {
       if (currentPlayerIndex < gameState.players.length - 1) {
         setCurrentPlayerIndex(prev => prev + 1);
@@ -159,37 +163,79 @@ export default function CardDraw() {
                       ? "bg-gradient-to-br from-red-950 via-zinc-900 to-black border-red-700/60 glow-red"
                       : "bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 border-zinc-700/50"
                   }`}>
-                    {/* Top badge */}
-                    <div className={`px-6 pt-6 pb-4 flex items-center gap-3 border-b ${
-                      currentPlayer.isMafioso ? "border-red-900/40" : "border-zinc-700/40"
-                    }`}>
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                        currentPlayer.isMafioso
-                          ? "bg-red-900/60 border border-red-700/50"
-                          : "bg-zinc-800 border border-zinc-700/50"
+
+                    {/* Character image */}
+                    {charImageSrc && !imgError && (
+                      <div className="relative h-44 shrink-0 overflow-hidden">
+                        <img
+                          src={charImageSrc}
+                          alt={character?.name}
+                          className="w-full h-full object-cover object-top"
+                          onError={() => setImgError(true)}
+                        />
+                        <div className={`absolute inset-0 bg-gradient-to-t ${
+                          currentPlayer.isMafioso
+                            ? "from-red-950 via-red-950/40 to-transparent"
+                            : "from-zinc-900 via-zinc-900/40 to-transparent"
+                        }`} />
+                        <div className="absolute bottom-3 right-4 left-4 flex items-center gap-2">
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                            currentPlayer.isMafioso
+                              ? "bg-red-900/80 border border-red-700/60"
+                              : "bg-zinc-800/80 border border-zinc-700/60"
+                          }`}>
+                            {currentPlayer.isMafioso
+                              ? <Skull className="w-4 h-4 text-red-400" />
+                              : <Shield className="w-4 h-4 text-green-400" />
+                            }
+                          </div>
+                          <div>
+                            <div className={`text-xs font-bold tracking-widest ${
+                              currentPlayer.isMafioso ? "text-red-400" : "text-green-400"
+                            }`}>
+                              {currentPlayer.isMafioso ? "مافيوسو" : "بريء"}
+                            </div>
+                            <div className="text-white font-black text-sm leading-tight" style={{ fontFamily: "'Cairo', sans-serif" }}>
+                              {currentPlayer.isMafioso ? "أنت المجرم" : "أنت بريء"}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Top badge — shown only when no image */}
+                    {(!charImageSrc || imgError) && (
+                      <div className={`px-6 pt-6 pb-4 flex items-center gap-3 border-b ${
+                        currentPlayer.isMafioso ? "border-red-900/40" : "border-zinc-700/40"
                       }`}>
-                        {currentPlayer.isMafioso
-                          ? <Skull className="w-6 h-6 text-red-400" />
-                          : <Shield className="w-6 h-6 text-green-400" />
-                        }
-                      </div>
-                      <div>
-                        <div className={`text-xs font-bold uppercase tracking-widest ${
-                          currentPlayer.isMafioso ? "text-red-400" : "text-green-400"
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                          currentPlayer.isMafioso
+                            ? "bg-red-900/60 border border-red-700/50"
+                            : "bg-zinc-800 border border-zinc-700/50"
                         }`}>
-                          {currentPlayer.isMafioso ? "مافيوسو" : "بريء"}
+                          {currentPlayer.isMafioso
+                            ? <Skull className="w-6 h-6 text-red-400" />
+                            : <Shield className="w-6 h-6 text-green-400" />
+                          }
                         </div>
-                        <div className="text-white font-black text-lg" style={{ fontFamily: "'Cairo', sans-serif" }}>
-                          {currentPlayer.isMafioso ? "أنت المجرم" : "أنت بريء"}
+                        <div>
+                          <div className={`text-xs font-bold uppercase tracking-widest ${
+                            currentPlayer.isMafioso ? "text-red-400" : "text-green-400"
+                          }`}>
+                            {currentPlayer.isMafioso ? "مافيوسو" : "بريء"}
+                          </div>
+                          <div className="text-white font-black text-lg" style={{ fontFamily: "'Cairo', sans-serif" }}>
+                            {currentPlayer.isMafioso ? "أنت المجرم" : "أنت بريء"}
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    )}
 
                     {/* Character info */}
                     {character && (
-                      <div className="flex-1 p-6 space-y-4 overflow-y-auto">
+                      <div className="flex-1 p-5 space-y-3 overflow-y-auto">
                         <div>
-                          <p className="text-xs text-zinc-500 mb-1">شخصيتك</p>
+                          <p className="text-xs text-zinc-500 mb-0.5">شخصيتك</p>
                           <h3 className="text-xl font-black text-white" style={{ fontFamily: "'Cairo', sans-serif" }}>
                             {character.name}
                           </h3>

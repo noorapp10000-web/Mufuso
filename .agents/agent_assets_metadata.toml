@@ -570,6 +570,66 @@ uri = "file://artifacts/mafioso/public/case-images/case6p_30.png"
 type = "image"
 title = "generated_image"
 
+[[generated]]
+id = "d6NQ9KflNa3LWfUNvyUjN"
+uri = "file://artifacts/mafioso/public/character-images/case_01_char_1.png"
+type = "image"
+title = "nadia hotel manager noir portrait"
+
+[[generated]]
+id = "kacwsRkAXBJWxkibtB_Vv"
+uri = "file://artifacts/mafioso/public/character-images/case_01_char_2.png"
+type = "image"
+title = "tarek assistant noir portrait"
+
+[[generated]]
+id = "1KVTJYcaQjKYb9dUBRczE"
+uri = "file://artifacts/mafioso/public/character-images/case_01_char_3.png"
+type = "image"
+title = "layla journalist noir portrait"
+
+[[generated]]
+id = "olkzBCCP-CC9RiLMVO0ys"
+uri = "file://artifacts/mafioso/public/character-images/case_01_char_4.png"
+type = "image"
+title = "mansour businessman noir portrait"
+
+[[generated]]
+id = "EiU-l8OuWTcyTylP5hFBv"
+uri = "file://artifacts/mafioso/public/character-images/case_02_char_1.png"
+type = "image"
+title = "case_02 char_1 portrait"
+
+[[generated]]
+id = "KozP4MWT_NAQ56MIwNy1D"
+uri = "file://artifacts/mafioso/public/character-images/case_02_char_2.png"
+type = "image"
+title = "case_02 char_2 portrait"
+
+[[generated]]
+id = "Sb_is0AOW8OuZZPWfsTls"
+uri = "file://artifacts/mafioso/public/character-images/case_02_char_3.png"
+type = "image"
+title = "case_02 char_3 portrait"
+
+[[generated]]
+id = "x3J-jKXABQuh5E7_uu373"
+uri = "file://artifacts/mafioso/public/character-images/case_02_char_4.png"
+type = "image"
+title = "case_02 char_4 portrait"
+
+[[generated]]
+id = "fMD_nZ_-UaB85Ok0D9cOv"
+uri = "file://artifacts/mafioso/public/character-images/case_03_char_1.png"
+type = "image"
+title = "case_03 char_1 portrait"
+
+[[generated]]
+id = "Yp0V-Vq2I7rVJZY3ei7aG"
+uri = "file://artifacts/mafioso/public/character-images/case_03_char_2.png"
+type = "image"
+title = "case_03 char_2 portrait"
+
 [[outputs]]
 id = "VbYA6GJrIiE0kDruUmuuW"
 uri = "file://artifacts/mafioso/public/bg_street_1.png"
@@ -653,3 +713,27 @@ id = "MyET8vwChXGYreinkUPfx"
 uri = "file://hf-server.zip"
 type = "unspecified"
 title = "mafioso-server (HF Deploy).zip"
+
+[[outputs]]
+id = "gHNG8o7wuvmEXLcdo3VEd"
+uri = "file://artifacts/mafioso/public/character-images/case_01_char_1.png"
+type = "image"
+title = "نادية الحلو — مديرة طابق الفندق"
+
+[[outputs]]
+id = "0ji8OHKwSlt9eo4v-n78F"
+uri = "file://artifacts/mafioso/public/character-images/case_01_char_2.png"
+type = "image"
+title = "طارق الوكيل — مساعد ومرافق شخصي"
+
+[[outputs]]
+id = "LIuJb5HxRGSfbMeCJDpp6"
+uri = "file://artifacts/mafioso/public/character-images/case_01_char_3.png"
+type = "image"
+title = "ليلى درويش — صحفية استقصائية"
+
+[[outputs]]
+id = "i1v52K1hSry5HUVPKVAd8"
+uri = "file://artifacts/mafioso/public/character-images/case_01_char_4.png"
+type = "image"
+title = "منصور الغني — رجل أعمال ومنافس تجاري"
