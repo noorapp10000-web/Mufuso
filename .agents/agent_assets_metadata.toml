@@ -1050,6 +1050,66 @@ uri = "file://artifacts/mafioso/public/character-images/case_20_char_4.png"
 type = "image"
 title = "عمرو الفراش"
 
+[[generated]]
+id = "6yHwkr3m6obygM6IaBLSW"
+uri = "file://artifacts/mafioso/public/character-images/case_21_char_1.png"
+type = "image"
+title = "بسيوني رجل الجمارك"
+
+[[generated]]
+id = "1nNUGN7YuemSz4kDk8sXY"
+uri = "file://artifacts/mafioso/public/character-images/case_21_char_2.png"
+type = "image"
+title = "كمال صاحب الشركة"
+
+[[generated]]
+id = "rQeAc6gxnxO1-yZtPuPpg"
+uri = "file://artifacts/mafioso/public/character-images/case_21_char_3.png"
+type = "image"
+title = "سليم السمسار"
+
+[[generated]]
+id = "DQ6hhZNo0kNOkQmhGID8l"
+uri = "file://artifacts/mafioso/public/character-images/case_21_char_4.png"
+type = "image"
+title = "لوتس محامية الجمارك"
+
+[[generated]]
+id = "uxKXR5KUK4FtFE_oReff7"
+uri = "file://artifacts/mafioso/public/character-images/case_22_char_1.png"
+type = "image"
+title = "طلعت رئيس مجلس الإدارة"
+
+[[generated]]
+id = "vSCGIg0vtBP7keMCsJ4qB"
+uri = "file://artifacts/mafioso/public/character-images/case_22_char_2.png"
+type = "image"
+title = "لبنى محللة الأسواق"
+
+[[generated]]
+id = "L2KzLc_BSdhvRmlgEUW_4"
+uri = "file://artifacts/mafioso/public/character-images/case_22_char_3.png"
+type = "image"
+title = "مراد المحاسب"
+
+[[generated]]
+id = "n7LgXOJkxT0ySxgPUNxk5"
+uri = "file://artifacts/mafioso/public/character-images/case_22_char_4.png"
+type = "image"
+title = "عصام المستثمر الكبير"
+
+[[generated]]
+id = "Dick-fAL986ogB6fzSy1g"
+uri = "file://artifacts/mafioso/public/character-images/case5p_01_char_1.png"
+type = "image"
+title = "جمال حسن المدير العام"
+
+[[generated]]
+id = "r4bs4vc-gj02pGf5FYUpN"
+uri = "file://artifacts/mafioso/public/character-images/case5p_01_char_2.png"
+type = "image"
+title = "سهير أمين مسؤولة التصنيع"
+
 [[outputs]]
 id = "VbYA6GJrIiE0kDruUmuuW"
 uri = "file://artifacts/mafioso/public/bg_street_1.png"
