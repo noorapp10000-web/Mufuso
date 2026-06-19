@@ -630,6 +630,66 @@ uri = "file://artifacts/mafioso/public/character-images/case_03_char_2.png"
 type = "image"
 title = "case_03 char_2 portrait"
 
+[[generated]]
+id = "3PmeR3vAIESLb2w_rLEer"
+uri = "file://artifacts/mafioso/public/character-images/case_03_char_3.png"
+type = "image"
+title = "كريم المحاسب"
+
+[[generated]]
+id = "ZtuUNHIrOGZpL_a_pNVhi"
+uri = "file://artifacts/mafioso/public/character-images/case_03_char_4.png"
+type = "image"
+title = "فريدة الممثلة"
+
+[[generated]]
+id = "sy5jesVh_DLzf2LTb9oGB"
+uri = "file://artifacts/mafioso/public/character-images/case_04_char_1.png"
+type = "image"
+title = "حسن الطباخ"
+
+[[generated]]
+id = "lvGc4gJ95ZUqVPkK460l9"
+uri = "file://artifacts/mafioso/public/character-images/case_04_char_2.png"
+type = "image"
+title = "خالد المدرب"
+
+[[generated]]
+id = "wOdCoVynyX7HKqdu5-NKa"
+uri = "file://artifacts/mafioso/public/character-images/case_04_char_3.png"
+type = "image"
+title = "عمر الوكيل"
+
+[[generated]]
+id = "H8rDEwLKKxTcNNaVI_vxz"
+uri = "file://artifacts/mafioso/public/character-images/case_04_char_4.png"
+type = "image"
+title = "نور أخصائية التغذية"
+
+[[generated]]
+id = "9i379nr6aj25ZrZA1mmFq"
+uri = "file://artifacts/mafioso/public/character-images/case_05_char_1.png"
+type = "image"
+title = "أمينة السكرتيرة"
+
+[[generated]]
+id = "UYdWN6PCU1rpmOic9BI1I"
+uri = "file://artifacts/mafioso/public/character-images/case_05_char_2.png"
+type = "image"
+title = "أحمد الابن الأكبر"
+
+[[generated]]
+id = "_m5UKmgyeXjzajGli2x_5"
+uri = "file://artifacts/mafioso/public/character-images/case_05_char_3.png"
+type = "image"
+title = "زكريا المحامي"
+
+[[generated]]
+id = "g5okr78nOEz_9I2AmnPua"
+uri = "file://artifacts/mafioso/public/character-images/case_05_char_4.png"
+type = "image"
+title = "لمياء الفنانة"
+
 [[outputs]]
 id = "VbYA6GJrIiE0kDruUmuuW"
 uri = "file://artifacts/mafioso/public/bg_street_1.png"
