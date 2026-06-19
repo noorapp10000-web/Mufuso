@@ -1350,6 +1350,66 @@ uri = "file://artifacts/mafioso/public/character-images/case5p_09_char_2.png"
 type = "image"
 title = "دكتور تامر العميد المساعد"
 
+[[generated]]
+id = "MGCQqZrPUaUHG5VNXWjv-"
+uri = "file://artifacts/mafioso/public/character-images/case5p_09_char_3.png"
+type = "image"
+title = "شيرين صيدلانية المعمل"
+
+[[generated]]
+id = "LB7WsRDTn9xpAdwdfxHD9"
+uri = "file://artifacts/mafioso/public/character-images/case5p_09_char_4.png"
+type = "image"
+title = "أستاذ ماجد الزميل الغيور"
+
+[[generated]]
+id = "9rAyL5-CmtK9zeLeWqd1Y"
+uri = "file://artifacts/mafioso/public/character-images/case5p_09_char_5.png"
+type = "image"
+title = "فارس مدير الشركة الدوائية"
+
+[[generated]]
+id = "gFsR5I_Aid6vpIiyzQgP0"
+uri = "file://artifacts/mafioso/public/character-images/case5p_10_char_1.png"
+type = "image"
+title = "اللواء طارق رئيس الأمن"
+
+[[generated]]
+id = "_3-HxYYgPVC7PSMXkS6OV"
+uri = "file://artifacts/mafioso/public/character-images/case5p_10_char_2.png"
+type = "image"
+title = "سفير دولة أجنبية"
+
+[[generated]]
+id = "N_Dun_Zy6pYXNU-h1XjjI"
+uri = "file://artifacts/mafioso/public/character-images/case5p_10_char_3.png"
+type = "image"
+title = "ضياء المتعامل الجمركي"
+
+[[generated]]
+id = "LObuHvat2hQ10hGnFESrm"
+uri = "file://artifacts/mafioso/public/character-images/case5p_10_char_4.png"
+type = "image"
+title = "هدير المترجمة الرسمية"
+
+[[generated]]
+id = "ut1TYZNGRuGSGZ8C22Pro"
+uri = "file://artifacts/mafioso/public/character-images/case5p_10_char_5.png"
+type = "image"
+title = "رشاد مراقب الجودة"
+
+[[generated]]
+id = "fAJ_wKP-wbNTFbAtgY-CO"
+uri = "file://artifacts/mafioso/public/character-images/case5p_11_char_1.png"
+type = "image"
+title = "المهندس عاطف رئيس المشروع"
+
+[[generated]]
+id = "lpdkpyx4T9EBVj7zep0BZ"
+uri = "file://artifacts/mafioso/public/character-images/case5p_11_char_2.png"
+type = "image"
+title = "منير العقاد صاحب الشركة"
+
 [[outputs]]
 id = "VbYA6GJrIiE0kDruUmuuW"
 uri = "file://artifacts/mafioso/public/bg_street_1.png"
