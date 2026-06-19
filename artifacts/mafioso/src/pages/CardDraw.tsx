@@ -25,7 +25,7 @@ export default function CardDraw() {
   const currentPlayer = gameState.players[currentPlayerIndex];
   const character = caseData.characters.find(c => c.id === currentPlayer.characterId);
 
-  const charImageSrc = character ? `/character-images/${caseId}_${character.id}.png` : null;
+  const charImageSrc = character ? `/character-images/${caseId}_${character.id}.webp` : null;
 
   const handleFlipCard = () => {
     setCardFlipped(true);

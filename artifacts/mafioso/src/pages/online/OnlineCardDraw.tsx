@@ -173,7 +173,7 @@ export default function OnlineCardDraw() {
                     {/* Background: character image or fallback */}
                     {character && room?.caseMeta ? (
                       <img
-                        src={`/character-images/${room.caseMeta.id}_${character.id}.png`}
+                        src={`/character-images/${room.caseMeta.id}_${character.id}.webp`}
                         alt={character.name}
                         className="absolute inset-0 w-full h-full object-cover object-top"
                         onError={(e) => {
