@@ -1290,6 +1290,66 @@ uri = "file://artifacts/mafioso/public/character-images/case5p_07_char_2.png"
 type = "image"
 title = "كريم المخرج الفني"
 
+[[generated]]
+id = "VMS7omCrO-AgYqGAtxEw6"
+uri = "file://artifacts/mafioso/public/character-images/case5p_07_char_3.png"
+type = "image"
+title = "سوزان الوزيرة الحاضرة"
+
+[[generated]]
+id = "L1fXTkrUPkZD9UTxsnD3T"
+uri = "file://artifacts/mafioso/public/character-images/case5p_07_char_4.png"
+type = "image"
+title = "بيتر الزوج الغائب"
+
+[[generated]]
+id = "MaP3k8pGIuZTfq7g3o_02"
+uri = "file://artifacts/mafioso/public/character-images/case5p_07_char_5.png"
+type = "image"
+title = "نجلاء المنافسة الناقدة"
+
+[[generated]]
+id = "AWd8aTgpXa66AUMKUW810"
+uri = "file://artifacts/mafioso/public/character-images/case5p_08_char_1.png"
+type = "image"
+title = "أسامة الأسطى اللاعب النجم"
+
+[[generated]]
+id = "u6O-e_L_1JrUf6UCPUUXT"
+uri = "file://artifacts/mafioso/public/character-images/case5p_08_char_2.png"
+type = "image"
+title = "حسن الأسطى مدير الأعمال"
+
+[[generated]]
+id = "DCuOy1vXcz2JjXue8XNE5"
+uri = "file://artifacts/mafioso/public/character-images/case5p_08_char_3.png"
+type = "image"
+title = "كارلوس المساعد التقني"
+
+[[generated]]
+id = "22WJquHrfoSIVq3C6uEa-"
+uri = "file://artifacts/mafioso/public/character-images/case5p_08_char_4.png"
+type = "image"
+title = "بيللا طبيبة النادي"
+
+[[generated]]
+id = "EIJBBCKarClagaCmn086h"
+uri = "file://artifacts/mafioso/public/character-images/case5p_08_char_5.png"
+type = "image"
+title = "جاك المالك الجديد"
+
+[[generated]]
+id = "zdDUgcMTx6T1ZgBDyYHuO"
+uri = "file://artifacts/mafioso/public/character-images/case5p_09_char_1.png"
+type = "image"
+title = "دكتورة ليلى طالبة الدكتوراه"
+
+[[generated]]
+id = "FwVZ5uywd9kY3ttI1WvyO"
+uri = "file://artifacts/mafioso/public/character-images/case5p_09_char_2.png"
+type = "image"
+title = "دكتور تامر العميد المساعد"
+
 [[outputs]]
 id = "VbYA6GJrIiE0kDruUmuuW"
 uri = "file://artifacts/mafioso/public/bg_street_1.png"
