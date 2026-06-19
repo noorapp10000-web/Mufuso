@@ -164,91 +164,125 @@ export default function OnlineCardDraw() {
 
                 {/* Card Front */}
                 <div className="flip-card-back absolute inset-0">
-                  <div className={`w-full h-full rounded-3xl border-2 shadow-2xl flex flex-col overflow-hidden ${
+                  <div className={`w-full h-full rounded-3xl border-2 shadow-2xl relative overflow-hidden ${
                     myCard.isMafioso
-                      ? "bg-gradient-to-br from-red-950 via-zinc-900 to-black border-red-700/60 glow-red"
-                      : "bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 border-zinc-700/50"
+                      ? "border-red-700/60 glow-red"
+                      : "border-zinc-700/50"
                   }`}>
-                    {/* Top badge */}
-                    <div className={`px-6 pt-6 pb-4 flex items-center gap-3 border-b ${
-                      myCard.isMafioso ? "border-red-900/40" : "border-zinc-700/40"
-                    }`}>
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                        myCard.isMafioso ? "bg-red-900/60 border border-red-700/50" : "bg-zinc-800 border border-zinc-700/50"
-                      }`}>
-                        {myCard.isMafioso
-                          ? <Skull className="w-6 h-6 text-red-400" />
-                          : <Shield className="w-6 h-6 text-green-400" />
-                        }
-                      </div>
-                      <div>
-                        <div className={`text-xs font-bold uppercase tracking-widest ${
-                          myCard.isMafioso ? "text-red-400" : "text-green-400"
-                        }`}>
-                          {myCard.isMafioso ? "مافيوسو" : "بريء"}
-                        </div>
-                        <div className="text-white font-black text-lg" style={{ fontFamily: "'Cairo', sans-serif" }}>
-                          {myCard.isMafioso ? "أنت المجرم" : "أنت بريء"}
-                        </div>
-                      </div>
-                    </div>
 
-                    {/* Character info */}
-                    {character && (
-                      <div className="flex-1 p-6 space-y-4 overflow-y-auto">
-                        <div>
-                          <p className="text-xs text-zinc-500 mb-1">شخصيتك</p>
-                          <h3 className="text-xl font-black text-white" style={{ fontFamily: "'Cairo', sans-serif" }}>
-                            {character.name}
-                          </h3>
-                          <p className="text-sm text-zinc-400">{character.profession}</p>
-                        </div>
-                        <div className="p-3 rounded-xl bg-white/3 border border-white/8">
-                          <p className="text-xs text-zinc-500 mb-1.5">خلفيتك</p>
-                          <p className="text-xs text-zinc-300 leading-relaxed">{character.background}</p>
-                        </div>
-                        <div className={`p-3 rounded-xl border ${
-                          myCard.isMafioso ? "bg-red-950/30 border-red-900/40" : "bg-zinc-800/50 border-zinc-700/40"
-                        }`}>
-                          <p className={`text-xs mb-1.5 ${myCard.isMafioso ? "text-red-400" : "text-zinc-500"}`}>
-                            {myCard.isMafioso ? "مهمتك" : "دافعك"}
-                          </p>
-                          <p className="text-xs text-zinc-300 leading-relaxed">{character.motive}</p>
-                        </div>
+                    {/* Background: character image or fallback */}
+                    {character && room?.caseMeta ? (
+                      <img
+                        src={`/character-images/${room.caseMeta.id}_${character.id}.png`}
+                        alt={character.name}
+                        className="absolute inset-0 w-full h-full object-cover object-top"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                    ) : null}
 
-                        {myCard.isMafioso && myCard.mafiosoPartnerName && (
-                          <div className="p-3 rounded-xl bg-red-950/40 border border-red-700/50">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Users className="w-3.5 h-3.5 text-red-400" />
-                              <p className="text-xs text-red-400 font-bold">شريكك المافيوسو</p>
-                            </div>
-                            <p className="text-base font-black text-white" style={{ fontFamily: "'Cairo', sans-serif" }}>
-                              {myCard.mafiosoPartnerName}
-                            </p>
-                            <p className="text-xs text-red-300/70 mt-1">لا تكشفوا بعضكم أمام الأبرياء</p>
-                          </div>
-                        )}
+                    {/* Fallback bg always present underneath */}
+                    <div className={`absolute inset-0 -z-10 ${
+                      myCard.isMafioso
+                        ? "bg-gradient-to-br from-red-950 via-zinc-900 to-black"
+                        : "bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900"
+                    }`} />
 
-                        {myCard.isMafioso && !myCard.mafiosoPartnerName && (
-                          <div className="p-3 rounded-xl bg-red-950/20 border border-red-900/30 text-center">
-                            <p className="text-xs text-red-400 font-bold" style={{ fontFamily: "'Cairo', sans-serif" }}>
-                              لا تكشف نفسك. أضلل الأبرياء.
-                            </p>
-                          </div>
-                        )}
-                      </div>
+                    {/* Gradient overlays for readability */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/95" />
+                    {myCard.isMafioso && (
+                      <div className="absolute inset-0 bg-gradient-to-t from-red-950/60 via-transparent to-transparent" />
                     )}
 
-                    {/* Confirm button */}
-                    <div className="p-4 border-t border-white/8">
-                      <button
-                        onClick={handleConfirm}
-                        className="w-full py-3 rounded-xl bg-white/8 hover:bg-white/12 transition-colors text-white font-bold text-sm flex items-center justify-center gap-2"
-                        style={{ fontFamily: "'Cairo', sans-serif" }}
-                      >
-                        <Eye className="w-4 h-4" />
-                        قرأت وفهمت
-                      </button>
+                    {/* Content over the image */}
+                    <div className="relative z-10 w-full h-full flex flex-col">
+
+                      {/* Top: role badge */}
+                      <div className="px-4 pt-4 pb-2 flex items-center gap-2">
+                        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full backdrop-blur-sm border ${
+                          myCard.isMafioso
+                            ? "bg-red-950/70 border-red-700/60"
+                            : "bg-black/50 border-zinc-600/60"
+                        }`}>
+                          {myCard.isMafioso
+                            ? <Skull className="w-4 h-4 text-red-400" />
+                            : <Shield className="w-4 h-4 text-green-400" />
+                          }
+                          <span className={`text-xs font-black tracking-widest ${
+                            myCard.isMafioso ? "text-red-300" : "text-green-300"
+                          }`} style={{ fontFamily: "'Cairo', sans-serif" }}>
+                            {myCard.isMafioso ? "مافيوسو — أنت المجرم" : "بريء — أنت في أمان"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Spacer to push content to bottom */}
+                      <div className="flex-1" />
+
+                      {/* Bottom: character info — scrollable */}
+                      <div className="overflow-y-auto max-h-[60%] px-4 pb-2 space-y-2.5">
+                        {character && (
+                          <>
+                            <div>
+                              <p className="text-xs text-zinc-400 mb-0.5">شخصيتك</p>
+                              <h3 className="text-2xl font-black text-white drop-shadow-lg" style={{ fontFamily: "'Cairo', sans-serif" }}>
+                                {character.name}
+                              </h3>
+                              <p className="text-sm text-zinc-300 drop-shadow">{character.profession}</p>
+                            </div>
+
+                            <div className="p-3 rounded-xl bg-black/55 backdrop-blur-sm border border-white/10">
+                              <p className="text-xs text-zinc-400 mb-1">خلفيتك</p>
+                              <p className="text-xs text-zinc-200 leading-relaxed">{character.background}</p>
+                            </div>
+
+                            <div className={`p-3 rounded-xl backdrop-blur-sm border ${
+                              myCard.isMafioso
+                                ? "bg-red-950/60 border-red-700/50"
+                                : "bg-black/55 border-white/10"
+                            }`}>
+                              <p className={`text-xs mb-1 ${myCard.isMafioso ? "text-red-400" : "text-zinc-400"}`}>
+                                {myCard.isMafioso ? "مهمتك" : "دافعك"}
+                              </p>
+                              <p className="text-xs text-zinc-200 leading-relaxed">{character.motive}</p>
+                            </div>
+
+                            {myCard.isMafioso && myCard.mafiosoPartnerName && (
+                              <div className="p-3 rounded-xl bg-red-950/70 backdrop-blur-sm border border-red-700/60">
+                                <div className="flex items-center gap-2 mb-1.5">
+                                  <Users className="w-3.5 h-3.5 text-red-400" />
+                                  <p className="text-xs text-red-400 font-bold">شريكك المافيوسو</p>
+                                </div>
+                                <p className="text-base font-black text-white" style={{ fontFamily: "'Cairo', sans-serif" }}>
+                                  {myCard.mafiosoPartnerName}
+                                </p>
+                                <p className="text-xs text-red-300/70 mt-1">لا تكشفوا بعضكم أمام الأبرياء</p>
+                              </div>
+                            )}
+
+                            {myCard.isMafioso && !myCard.mafiosoPartnerName && (
+                              <div className="p-3 rounded-xl bg-red-950/60 backdrop-blur-sm border border-red-900/50 text-center">
+                                <p className="text-xs text-red-300 font-bold" style={{ fontFamily: "'Cairo', sans-serif" }}>
+                                  لا تكشف نفسك. أضلل الأبرياء.
+                                </p>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+
+                      {/* Confirm button */}
+                      <div className="p-4 shrink-0">
+                        <button
+                          onClick={handleConfirm}
+                          className="w-full py-3 rounded-xl bg-black/60 backdrop-blur-sm hover:bg-black/75 transition-colors text-white font-bold text-sm flex items-center justify-center gap-2 border border-white/15"
+                          style={{ fontFamily: "'Cairo', sans-serif" }}
+                        >
+                          <Eye className="w-4 h-4" />
+                          قرأت وفهمت
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
