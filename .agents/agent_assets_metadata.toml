@@ -750,6 +750,66 @@ uri = "file://artifacts/mafioso/public/character-images/case_08_char_2.png"
 type = "image"
 title = "أمل الطبيبة"
 
+[[generated]]
+id = "sUGjGC82ESovOnc8mOvop"
+uri = "file://artifacts/mafioso/public/character-images/case_08_char_3.png"
+type = "image"
+title = "إبراهيم الضابط السابق"
+
+[[generated]]
+id = "R87KFbDuglKlgibUAySD9"
+uri = "file://artifacts/mafioso/public/character-images/case_08_char_4.png"
+type = "image"
+title = "هاجر المراقبة"
+
+[[generated]]
+id = "jREYvsJg78d14V5UP6mQO"
+uri = "file://artifacts/mafioso/public/character-images/case_09_char_1.png"
+type = "image"
+title = "وليد المصور"
+
+[[generated]]
+id = "KD29cvp2mC0mxl6mOHEHH"
+uri = "file://artifacts/mafioso/public/character-images/case_09_char_2.png"
+type = "image"
+title = "الزوج السابق"
+
+[[generated]]
+id = "PjvqIdHoAWTklyT9fjTxb"
+uri = "file://artifacts/mafioso/public/character-images/case_09_char_3.png"
+type = "image"
+title = "ساندي الصديقة"
+
+[[generated]]
+id = "_pYpgu-8y9RIRDtf6Lgb8"
+uri = "file://artifacts/mafioso/public/character-images/case_09_char_4.png"
+type = "image"
+title = "مدير الأعمال"
+
+[[generated]]
+id = "czp2Z2lmbOZ4WOHa1bt3V"
+uri = "file://artifacts/mafioso/public/character-images/case_10_char_1.png"
+type = "image"
+title = "إسلام المهندس"
+
+[[generated]]
+id = "FQeY_ZGAgolFA3btLRoBD"
+uri = "file://artifacts/mafioso/public/character-images/case_10_char_2.png"
+type = "image"
+title = "مصطفى المقاول"
+
+[[generated]]
+id = "Ee7SKS1ZjQ1QMP2U8LHws"
+uri = "file://artifacts/mafioso/public/character-images/case_10_char_3.png"
+type = "image"
+title = "حسام الموظف الحكومي"
+
+[[generated]]
+id = "qNbIKWfcCTz5sQ0m6xnsc"
+uri = "file://artifacts/mafioso/public/character-images/case_10_char_4.png"
+type = "image"
+title = "دينا الصحفية"
+
 [[outputs]]
 id = "VbYA6GJrIiE0kDruUmuuW"
 uri = "file://artifacts/mafioso/public/bg_street_1.png"
