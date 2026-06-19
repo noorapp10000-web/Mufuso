@@ -990,6 +990,66 @@ uri = "file://artifacts/mafioso/public/character-images/case_18_char_2.png"
 type = "image"
 title = "روز الخادمة"
 
+[[generated]]
+id = "CdK6PUJtq5oAXZpFOXhPw"
+uri = "file://artifacts/mafioso/public/character-images/case_18_char_3.png"
+type = "image"
+title = "جورج الجار"
+
+[[generated]]
+id = "06ZEgmZ8lKJTC-b5341ir"
+uri = "file://artifacts/mafioso/public/character-images/case_18_char_4.png"
+type = "image"
+title = "كارلا الممرضة الخاصة"
+
+[[generated]]
+id = "zEWY3bDJvaD_5W2-uZXHp"
+uri = "file://artifacts/mafioso/public/character-images/case_19_char_1.png"
+type = "image"
+title = "فارس المنافس"
+
+[[generated]]
+id = "UZYDcd9gXz1oUt-YGMILK"
+uri = "file://artifacts/mafioso/public/character-images/case_19_char_2.png"
+type = "image"
+title = "مروة الفنانة"
+
+[[generated]]
+id = "ZW1ggOXNSiQrbVoR0rEmk"
+uri = "file://artifacts/mafioso/public/character-images/case_19_char_3.png"
+type = "image"
+title = "صفاء المديرة الفنية"
+
+[[generated]]
+id = "SjavIpGszSl0Ts4HrPmuk"
+uri = "file://artifacts/mafioso/public/character-images/case_19_char_4.png"
+type = "image"
+title = "راغب الحارس"
+
+[[generated]]
+id = "Xn6BPCoGwNThkeHyEZi35"
+uri = "file://artifacts/mafioso/public/character-images/case_20_char_1.png"
+type = "image"
+title = "نوران أم الطالب"
+
+[[generated]]
+id = "5cbeGgFfc5qQVUzetHrhW"
+uri = "file://artifacts/mafioso/public/character-images/case_20_char_2.png"
+type = "image"
+title = "وائل المدرس"
+
+[[generated]]
+id = "9jd6Cy0GzeOFE8pKUKltC"
+uri = "file://artifacts/mafioso/public/character-images/case_20_char_3.png"
+type = "image"
+title = "هند مديرة المالية"
+
+[[generated]]
+id = "vYDBxeYCtwjUnmnqW43tb"
+uri = "file://artifacts/mafioso/public/character-images/case_20_char_4.png"
+type = "image"
+title = "عمرو الفراش"
+
 [[outputs]]
 id = "VbYA6GJrIiE0kDruUmuuW"
 uri = "file://artifacts/mafioso/public/bg_street_1.png"
