@@ -1230,6 +1230,66 @@ uri = "file://artifacts/mafioso/public/character-images/case5p_05_char_2.png"
 type = "image"
 title = "لورين زوجته البلجيكية"
 
+[[generated]]
+id = "w9IUxTOS1RQ9l9Ddluo16"
+uri = "file://artifacts/mafioso/public/character-images/case5p_05_char_3.png"
+type = "image"
+title = "ياسر الصافي مدير العمليات"
+
+[[generated]]
+id = "5gTNgYVu_see_dSUbl85S"
+uri = "file://artifacts/mafioso/public/character-images/case5p_05_char_4.png"
+type = "image"
+title = "رانيا مدير التسويق"
+
+[[generated]]
+id = "H1IBWsKi2tYUDZGuW7Qix"
+uri = "file://artifacts/mafioso/public/character-images/case5p_05_char_5.png"
+type = "image"
+title = "ثروت نديم مقاول منافس"
+
+[[generated]]
+id = "ODkvbXGGALDlrfIQXMs1S"
+uri = "file://artifacts/mafioso/public/character-images/case5p_06_char_1.png"
+type = "image"
+title = "دكتور فريد مدير تقنية المعلومات"
+
+[[generated]]
+id = "RFd-CREQeIMikOE381De0"
+uri = "file://artifacts/mafioso/public/character-images/case5p_06_char_2.png"
+type = "image"
+title = "مي زكريا مهندسة الأمن"
+
+[[generated]]
+id = "fVHnPsp8_hYsamWyOqi4u"
+uri = "file://artifacts/mafioso/public/character-images/case5p_06_char_3.png"
+type = "image"
+title = "أشرف لطفي محلل البيانات"
+
+[[generated]]
+id = "SOtAVK6VFO4nMlgeFrAi-"
+uri = "file://artifacts/mafioso/public/character-images/case5p_06_char_4.png"
+type = "image"
+title = "لينا مجدي مديرة العمليات المصرفية"
+
+[[generated]]
+id = "MVqQVkhr2G6oSo2IWF7A7"
+uri = "file://artifacts/mafioso/public/character-images/case5p_06_char_5.png"
+type = "image"
+title = "حمزة ياسين مستشار تقني خارجي"
+
+[[generated]]
+id = "x_bpy3WJD66W_8xTOzGtv"
+uri = "file://artifacts/mafioso/public/character-images/case5p_07_char_1.png"
+type = "image"
+title = "أميرة الراقصة الأولى"
+
+[[generated]]
+id = "0_0zicfcZ3V6aHhcol55u"
+uri = "file://artifacts/mafioso/public/character-images/case5p_07_char_2.png"
+type = "image"
+title = "كريم المخرج الفني"
+
 [[outputs]]
 id = "VbYA6GJrIiE0kDruUmuuW"
 uri = "file://artifacts/mafioso/public/bg_street_1.png"
