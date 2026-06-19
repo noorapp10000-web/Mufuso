@@ -930,6 +930,66 @@ uri = "file://artifacts/mafioso/public/character-images/case_15_char_4.png"
 type = "image"
 title = "أيمن الحارس الشخصي"
 
+[[generated]]
+id = "WoJH-waK2ld1HcPyjj-tY"
+uri = "file://artifacts/mafioso/public/character-images/case_16_char_1.png"
+type = "image"
+title = "ماهر المدير العام"
+
+[[generated]]
+id = "nmjpRrovusIAzWnOLc4jo"
+uri = "file://artifacts/mafioso/public/character-images/case_16_char_2.png"
+type = "image"
+title = "عزة مديرة الأنظمة"
+
+[[generated]]
+id = "WWUcvH6DXYND83-BDPxcH"
+uri = "file://artifacts/mafioso/public/character-images/case_16_char_3.png"
+type = "image"
+title = "منير مدير العمليات"
+
+[[generated]]
+id = "LwhDx_bHu9rUTrTkNuwbK"
+uri = "file://artifacts/mafioso/public/character-images/case_16_char_4.png"
+type = "image"
+title = "وفاء مراجعة الحسابات"
+
+[[generated]]
+id = "6m3FxMd2Zbw-FmgBkm4jP"
+uri = "file://artifacts/mafioso/public/character-images/case_17_char_1.png"
+type = "image"
+title = "ندى مديرة النادي"
+
+[[generated]]
+id = "9Nb1PnCBWEaL6fiIKATSQ"
+uri = "file://artifacts/mafioso/public/character-images/case_17_char_2.png"
+type = "image"
+title = "طاهر حارس الليل"
+
+[[generated]]
+id = "N7_fZJNxsCUY_9ogra2x2"
+uri = "file://artifacts/mafioso/public/character-images/case_17_char_3.png"
+type = "image"
+title = "آسر عضو النادي"
+
+[[generated]]
+id = "hhw38vXQdHVCz1d88kfaL"
+uri = "file://artifacts/mafioso/public/character-images/case_17_char_4.png"
+type = "image"
+title = "شيرين المساعدة"
+
+[[generated]]
+id = "RnvQ5bqdNgYjF5mI_NheX"
+uri = "file://artifacts/mafioso/public/character-images/case_18_char_1.png"
+type = "image"
+title = "نبيل الابن الوحيد"
+
+[[generated]]
+id = "ROS6DC-CeQHsIv43w_SrO"
+uri = "file://artifacts/mafioso/public/character-images/case_18_char_2.png"
+type = "image"
+title = "روز الخادمة"
+
 [[outputs]]
 id = "VbYA6GJrIiE0kDruUmuuW"
 uri = "file://artifacts/mafioso/public/bg_street_1.png"
