@@ -1110,6 +1110,66 @@ uri = "file://artifacts/mafioso/public/character-images/case5p_01_char_2.png"
 type = "image"
 title = "سهير أمين مسؤولة التصنيع"
 
+[[generated]]
+id = "52L9ODWgrDIacTvMGBHxK"
+uri = "file://artifacts/mafioso/public/character-images/case5p_01_char_3.png"
+type = "image"
+title = "هشام دياب مستشار التسويق"
+
+[[generated]]
+id = "IgecrMmJXDu3FPjTYQljx"
+uri = "file://artifacts/mafioso/public/character-images/case5p_01_char_4.png"
+type = "image"
+title = "نادين فارس محامية الشركة"
+
+[[generated]]
+id = "NifbcYVal7IkkWFrcKuZP"
+uri = "file://artifacts/mafioso/public/character-images/case5p_01_char_5.png"
+type = "image"
+title = "إيهاب ناصر موظف المختبر"
+
+[[generated]]
+id = "ilfKxajZWICk8aATpckm1"
+uri = "file://artifacts/mafioso/public/character-images/case5p_02_char_1.png"
+type = "image"
+title = "لمياء حسين أمينة المتحف"
+
+[[generated]]
+id = "tMpUEqeUHq4MmGf9UCOM2"
+uri = "file://artifacts/mafioso/public/character-images/case5p_02_char_2.png"
+type = "image"
+title = "بسيوني قاسم رئيس الأمن"
+
+[[generated]]
+id = "beQu29gXBJ-Bb2EsCtavS"
+uri = "file://artifacts/mafioso/public/character-images/case5p_02_char_3.png"
+type = "image"
+title = "سمر البرعي المنظمة"
+
+[[generated]]
+id = "vL5JiuDHc60-72tupbKBH"
+uri = "file://artifacts/mafioso/public/character-images/case5p_02_char_4.png"
+type = "image"
+title = "فادي كوندي تاجر الآثار"
+
+[[generated]]
+id = "2FIZ7HoGo3sy1CFzUgAZP"
+uri = "file://artifacts/mafioso/public/character-images/case5p_02_char_5.png"
+type = "image"
+title = "يسري عطية موظف الصيانة"
+
+[[generated]]
+id = "a2BudcYot5LRVgYu0C3QP"
+uri = "file://artifacts/mafioso/public/character-images/case5p_03_char_1.png"
+type = "image"
+title = "دكتور مصطفى المؤسس"
+
+[[generated]]
+id = "stRkRhlzNibbZt5sqbKhO"
+uri = "file://artifacts/mafioso/public/character-images/case5p_03_char_2.png"
+type = "image"
+title = "ياسمين حلمي رئيسة المطورين"
+
 [[outputs]]
 id = "VbYA6GJrIiE0kDruUmuuW"
 uri = "file://artifacts/mafioso/public/bg_street_1.png"
