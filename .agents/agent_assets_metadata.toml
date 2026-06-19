@@ -1170,6 +1170,66 @@ uri = "file://artifacts/mafioso/public/character-images/case5p_03_char_2.png"
 type = "image"
 title = "ياسمين حلمي رئيسة المطورين"
 
+[[generated]]
+id = "ZtF1iN-8h-l85rfhMRFVX"
+uri = "file://artifacts/mafioso/public/character-images/case5p_03_char_3.png"
+type = "image"
+title = "أحمد سليمان مهندس البنية"
+
+[[generated]]
+id = "My2ymZpDEqIQsBkAeRMZ1"
+uri = "file://artifacts/mafioso/public/character-images/case5p_03_char_4.png"
+type = "image"
+title = "نورا ثروت مديرة المنتج"
+
+[[generated]]
+id = "OTiI6DuS_PIEOkg8oGJrP"
+uri = "file://artifacts/mafioso/public/character-images/case5p_03_char_5.png"
+type = "image"
+title = "رامي الشاذلي مدير الأمن التقني"
+
+[[generated]]
+id = "kOHCs_J-U8VMjjec1tcI1"
+uri = "file://artifacts/mafioso/public/character-images/case5p_04_char_1.png"
+type = "image"
+title = "مريم زوجته الثانية"
+
+[[generated]]
+id = "F22MRHdzjNYAWy6ks4Tr-"
+uri = "file://artifacts/mafioso/public/character-images/case5p_04_char_2.png"
+type = "image"
+title = "كريم ابن الزوجة الأولى"
+
+[[generated]]
+id = "A1APGI-khJl0HMluJ-yCJ"
+uri = "file://artifacts/mafioso/public/character-images/case5p_04_char_3.png"
+type = "image"
+title = "خالد الشريك التجاري"
+
+[[generated]]
+id = "TyISDnNWGKW7kZ17UAR7H"
+uri = "file://artifacts/mafioso/public/character-images/case5p_04_char_4.png"
+type = "image"
+title = "دينا الطبيبة الخاصة"
+
+[[generated]]
+id = "ZlzzNI-HzmKQE-bwlCTNT"
+uri = "file://artifacts/mafioso/public/character-images/case5p_04_char_5.png"
+type = "image"
+title = "أكرم مدير الأعمال"
+
+[[generated]]
+id = "-a1vdC7xIXtqSCF3EjofH"
+uri = "file://artifacts/mafioso/public/character-images/case5p_05_char_1.png"
+type = "image"
+title = "وليد النائب التنفيذي"
+
+[[generated]]
+id = "5zSPNq2STHyDUNpA_1Uc6"
+uri = "file://artifacts/mafioso/public/character-images/case5p_05_char_2.png"
+type = "image"
+title = "لورين زوجته البلجيكية"
+
 [[outputs]]
 id = "VbYA6GJrIiE0kDruUmuuW"
 uri = "file://artifacts/mafioso/public/bg_street_1.png"
