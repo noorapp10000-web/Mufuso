@@ -68,4 +68,3 @@ channel = "stable-25_05"
 [userenv]
 
 [userenv.shared]
-VITE_API_URL = "https://seifoooo-mafioso-server.hf.space"
