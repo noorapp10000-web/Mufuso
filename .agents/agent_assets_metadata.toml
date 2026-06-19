@@ -810,6 +810,66 @@ uri = "file://artifacts/mafioso/public/character-images/case_10_char_4.png"
 type = "image"
 title = "دينا الصحفية"
 
+[[generated]]
+id = "BRUkcKrFGx4CWtbgYXpad"
+uri = "file://artifacts/mafioso/public/character-images/case_11_char_1.png"
+type = "image"
+title = "دكتور فتحي عالم الآثار"
+
+[[generated]]
+id = "Sanc1E7WcahWfe9ZnQB9f"
+uri = "file://artifacts/mafioso/public/character-images/case_11_char_2.png"
+type = "image"
+title = "رائد حارس الموقع"
+
+[[generated]]
+id = "jRPI2p_9j0aHN9PfX0uhW"
+uri = "file://artifacts/mafioso/public/character-images/case_11_char_3.png"
+type = "image"
+title = "باحثة السجلات"
+
+[[generated]]
+id = "m21i2A75XxY3io9vO2pKP"
+uri = "file://artifacts/mafioso/public/character-images/case_11_char_4.png"
+type = "image"
+title = "هنري المصور الأجنبي"
+
+[[generated]]
+id = "_Hhm8rT7cNt_4WX0BqC92"
+uri = "file://artifacts/mafioso/public/character-images/case_12_char_1.png"
+type = "image"
+title = "توفيق الشريك المؤسس"
+
+[[generated]]
+id = "dom2R94vDja_B4buWtYOP"
+uri = "file://artifacts/mafioso/public/character-images/case_12_char_2.png"
+type = "image"
+title = "مي الرئيسة التنفيذية"
+
+[[generated]]
+id = "bXz6hvg0bda9e8G_8sB6z"
+uri = "file://artifacts/mafioso/public/character-images/case_12_char_3.png"
+type = "image"
+title = "علي مستشار المالية"
+
+[[generated]]
+id = "6J59QgtzH4OPMEMFtSj-L"
+uri = "file://artifacts/mafioso/public/character-images/case_12_char_4.png"
+type = "image"
+title = "جمال سكرتير الاجتماعات"
+
+[[generated]]
+id = "n7tvnYyF663RNrFSwywqf"
+uri = "file://artifacts/mafioso/public/character-images/case_13_char_1.png"
+type = "image"
+title = "راضي الأخ الصغير"
+
+[[generated]]
+id = "BTtbLKgr7edy0_-OSOUlG"
+uri = "file://artifacts/mafioso/public/character-images/case_13_char_2.png"
+type = "image"
+title = "لطيفة الزوجة"
+
 [[outputs]]
 id = "VbYA6GJrIiE0kDruUmuuW"
 uri = "file://artifacts/mafioso/public/bg_street_1.png"
